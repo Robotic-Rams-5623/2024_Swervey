@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
@@ -28,6 +29,7 @@ public class SwerveModule {
 
     private final RelativeEncoder m_driveEncoder;
     private final AbsoluteEncoder m_turnEncoder;
+    //private final CANcoder m_turnCANcoder;
 
     private final SparkPIDController m_drivePIDControl;
     private final SparkPIDController m_turnPIDControl;
@@ -63,6 +65,7 @@ public class SwerveModule {
         */
         m_driveEncoder = m_driveMotor.getEncoder();
         m_turnEncoder = m_turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
+        //m_turnCANcoder = new CANcoder(turnCANid);
 
         /* 
          * Confgiure the PID Controllers from the motor PID controllers using the
@@ -72,6 +75,7 @@ public class SwerveModule {
         m_drivePIDControl.setFeedbackDevice(m_driveEncoder);
         m_turnPIDControl = m_turnMotor.getPIDController();
         m_turnPIDControl.setFeedbackDevice(m_turnEncoder);
+        //m_turnPIDControl.setFeedbackDevice(m_turnCANcoder);
 
         /*
          * PID Controller Settings
@@ -138,6 +142,7 @@ public class SwerveModule {
 
         m_angleOffset = angleOffset;
         m_desiredState.angle = new Rotation2d(m_turnEncoder.getPosition());
+        //m_desiredState.angle = new Rotation2d(m_turnCANcoder.getPosition());
         m_driveEncoder.setPosition(0.0);
     }
 
@@ -152,6 +157,7 @@ public class SwerveModule {
         return new SwerveModuleState(
             m_driveEncoder.getVelocity(),
             new Rotation2d(m_turnEncoder.getPosition() - m_angleOffset)
+            //new Rotation2d(m_turnCANcoder.getPosition() - m_angleOffset)
         );
     }
 
@@ -166,6 +172,7 @@ public class SwerveModule {
         return new SwerveModulePosition(
             m_driveEncoder.getPosition(),
             new Rotation2d(m_turnEncoder.getPosition() - m_angleOffset)
+            //new Rotation2d(m_turnCANcoder.getPosition() - m_angleOffset)
         );
     }
 
@@ -184,6 +191,7 @@ public class SwerveModule {
         // Optimize the reference state to avoid spinning further than 90 degrees
         SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctDesiredState,
             new Rotation2d(m_turnEncoder.getPosition()));
+            //new Rotation2d(m_turnCANcoder.getPosition()));
 
         // Command driving and turning motor controller towards their respective setpoints.
         m_drivePIDControl.setReference(optimizedDesiredState.speedMetersPerSecond, ControlType.kVelocity);

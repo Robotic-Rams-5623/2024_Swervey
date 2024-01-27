@@ -30,12 +30,17 @@ public final class Constants {
     /** SPARK FLEX CAN IDs */
     public static final int kFrontLeftDriveCANid = 11;
     public static final int kFrontLeftTurnCANid = 12;
+    public static final int kFrontLeftCANcoderid = 22;
     public static final int kFrontRightDriveCANid = 13;
     public static final int kFrontRightTurnCANid = 14;
+    public static final int kFrontRightCANcoderid = 24;
     public static final int kBackLeftDriveCANid = 15;
     public static final int kBackLeftTurnCANid = 16;
+    public static final int kBackLeftCANcoderid = 26;
     public static final int kBackRightDriveCANid = 17;
     public static final int kBackRightTurnCANid = 18;
+    public static final int kBackRightCANcoderid = 28;
+
   }
 
   public static class Swerve {
@@ -50,9 +55,9 @@ public final class Constants {
     public static final double kBackRightAngleOffset = Math.PI / 2; // pi/2 = 90deg
 
     // Distance between the centers of the left and right wheel in the robot
-    public static final double kWheelBase = Units.inchesToMeters(25.0);
+    public static final double kWheelBase = Units.inchesToMeters(22.0);
     // Distance between the centers of the front and back wheels on the robot
-    public static final double kTrackWidth = Units.inchesToMeters(25.0);
+    public static final double kTrackWidth = Units.inchesToMeters(24.25);
     // The combination of the above into the kinematic positions of the wheels
     public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
       new Translation2d(kWheelBase / 2, kTrackWidth / 2),
@@ -81,11 +86,11 @@ public final class Constants {
 
     /** POSITION AND VERLOCITY CONSTANTS AND MATH */
     // Wheel dimensions
-    public static final double kWheelDiameterMeters = 0.0762; // meters
+    public static final double kWheelDiameterMeters = Units.inchesToMeters(4.0); // meters
     public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI; // meters
 
     // Gear reduction ratio from drive motor to wheel
-    public static final double kDriveMotorReduction = (45.0 * 22) / (1.0 * 15); // ##:##
+    public static final double kDriveMotorReduction = (6.75 / 1.0); // 6.75:1 SDS MK4 Module with L2 Ratio
     // Free speed limits of the drive motor
     public static final double kDriveMotorFreeSpeedRps = MotorParams.kFreeSpeedRPMVortex / 60; // rev/sec
     public static final double kDriveWheelFreeSpeedRps = (kDriveMotorFreeSpeedRps * kWheelCircumferenceMeters) / kDriveMotorReduction; // rev/sec
