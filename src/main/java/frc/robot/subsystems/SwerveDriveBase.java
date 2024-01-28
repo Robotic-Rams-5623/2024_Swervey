@@ -14,12 +14,17 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.SwerveUtils;
 
 public class SwerveDriveBase extends SubsystemBase {
+  private final StructArrayPublisher<SwerveModuleState> publisher;
+
   /** 
    * Create a new swerve module for each of the four modules.
    * Follow the orientation described below in the handy ASCII
@@ -90,12 +95,18 @@ public class SwerveDriveBase extends SubsystemBase {
       });
 
 
-  public SwerveDriveBase() {}
+  public SwerveDriveBase() {
+    publisher = NetworkTableInstance.getDefault().
+      getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).
+      publish();
+  }
 
+  /**
+   * PERIODIC LOOP 
+   * Runs once a scheduler call
+   */
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-
     /** 
      * Update the odemetry in the periodic block so it keeps getting updated
      */
@@ -107,6 +118,14 @@ public class SwerveDriveBase extends SubsystemBase {
         m_backLeft.getPosition(),
         m_backRight.getPosition()
       });
+
+      publisher.set(new SwerveModuleState[] {
+        m_frontLeft.getState(),
+        m_frontRight.getState(),
+        m_backLeft.getState(),
+        m_backRight.getState()
+      });
+
   }
 
   /**
