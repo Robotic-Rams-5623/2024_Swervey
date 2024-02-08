@@ -41,7 +41,31 @@ public final class Constants {
     public static final int kBackRightTurnCANid = 18;
     public static final int kBackRightCANcoderid = 28;
 
+    /** Spark max climb ids */
+    public static final int kClimbMotorCANid = 31;
+
+    /**Launcher*/
+    public static final int kRLauncherMotorCANid = 32; 
+    public static final int kLLauncherMotorCANid = 33;
+    public static final int kLaunchFeedServoid = 0;
+
+    /**Tilter */
+    public static final int kTilterMotorCANid = 34;
+    public static final int kTiltAnglePotAIid = 0;
   }
+
+public static class Climb{
+  
+}
+
+public static class Launcher{
+
+}
+
+public static class Tilter{
+
+}
+
 
   public static class Swerve {
     /** DRIVE KINEMATIC CALCULATIONS */

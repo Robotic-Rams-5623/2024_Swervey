@@ -17,11 +17,12 @@ public class Climb extends SubsystemBase {
   private final RelativeEncoder m_ClimbEncoder;
 
   public Climb() {
-    m_ClimbMotor.restoreFactoryDefaults();
+    m_ClimbMotor.restoreFactoryDefaults(); //
+
     m_ClimbEncoder = m_ClimbMotor.getEncoder();
     m_ClimbEncoder.setInverted(false);
     
-    m_ClimbMotor.burnFlash();
+    m_ClimbMotor.burnFlash();//
   }
 
   public final void Up() {}
@@ -29,7 +30,7 @@ public class Climb extends SubsystemBase {
   public final void Down() {}
 
   public final void Stop() {}
-
+  
   public final double getPosition() {
     return 0.0;
   }
