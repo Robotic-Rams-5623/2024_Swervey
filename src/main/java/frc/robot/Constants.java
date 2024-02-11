@@ -55,7 +55,32 @@ public final class Constants {
   }
 
 public static class Climb{
-  
+  /** CLIMB SUBSYSTEM PARAMETERS */
+  public static final double kSpeedUp = 0.5; // Percent Output
+  public static final double kSpeedDown = 0.5; // Percent Output
+  public static final double kResetPosition = 0; // Zero for relative to robot or offset to be relative to floor
+  public static final double kPositionConversion = 1; // Inches = Units * ???
+  public static final double kVelocityConversion = 1; // Inch/Sec = RPM * ???
+
+  /** CLIMB MOTOR CONFIGURATION CONSTANTS */
+  public static final double kClosedRampRate = 2;
+  public static final double kOpenRampRate = 2;
+  public static final int kCurrentLimit = 30;
+  public static final boolean kMotorInverted = false;
+  public static final IdleMode kIdleMode = IdleMode.kBrake;
+
+  /** CLIMB ENCODER CONFIGURATION CONSTANTS */
+  public static final boolean kEncInverted = false;
+
+  /** CLIMB PID CONTROLLER CONSTANTS */
+  public static final double kP = 0.1; // Proportional Constant
+  public static final double kI = 0.0; // Integral Constant
+  public static final double kD = 0.0; // Derivative Constant (LEAVE AT ZERO)
+  public static final double kIz = 0.5; // Integral deadzone (Zero disables the deadzone)
+  public static final double kFF = 0.01; // Feed Forward Gain
+  public static final double kMaxOutput = 0.6; // Percent Output
+  public static final double kMinOutput = -0.4; // Needs to be negative
+  public static final double kMaxRPM = 5000; // Max RPM in Closed Loop Mode
 }
 
 public static class Launcher{

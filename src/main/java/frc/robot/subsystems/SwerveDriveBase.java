@@ -17,7 +17,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.util.WPIUtilJNI;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.SwerveUtils;
@@ -43,25 +42,29 @@ public class SwerveDriveBase extends SubsystemBase {
   private final SwerveModule m_frontLeft = new SwerveModule(
     Constants.MotorIDs.kFrontLeftDriveCANid,
     Constants.MotorIDs.kFrontLeftTurnCANid,
-    Constants.Swerve.kFrontLeftAngleOffset
+    Constants.Swerve.kFrontLeftAngleOffset,
+    "Front Left"
   );
 
   private final SwerveModule m_frontRight = new SwerveModule(
     Constants.MotorIDs.kFrontRightDriveCANid,
     Constants.MotorIDs.kFrontRightTurnCANid,
-    Constants.Swerve.kFrontRightAngleOffset
+    Constants.Swerve.kFrontRightAngleOffset,
+    "Front Right"
   );
 
   private final SwerveModule m_backLeft = new SwerveModule(
     Constants.MotorIDs.kBackLeftDriveCANid,
     Constants.MotorIDs.kBackLeftTurnCANid,
-    Constants.Swerve.kBackLeftAngleOffset
+    Constants.Swerve.kBackLeftAngleOffset,
+    "Back Left"
   );
 
   private final SwerveModule m_backRight = new SwerveModule(
     Constants.MotorIDs.kBackRightDriveCANid,
     Constants.MotorIDs.kBackRightTurnCANid,
-    Constants.Swerve.kBackRightAngleOffset
+    Constants.Swerve.kBackRightAngleOffset,
+    "Back Right"
   );
 
   /** 
@@ -125,7 +128,6 @@ public class SwerveDriveBase extends SubsystemBase {
         m_backLeft.getState(),
         m_backRight.getState()
       });
-
   }
 
   /**

@@ -48,7 +48,7 @@ public class SwerveModule {
     /*
      * SwerveModule function that all four modules will be configured with.
      */
-    public SwerveModule(int driveCANid, int turnCANid, double angleOffset) {
+    public SwerveModule(int driveCANid, int turnCANid, double angleOffset, String Name) {
         /* Create the drive motor object and reset settings */
         m_driveMotor = new CANSparkFlex(driveCANid, MotorType.kBrushless);
         m_driveMotor.restoreFactoryDefaults();
@@ -144,6 +144,10 @@ public class SwerveModule {
         m_angleOffset = angleOffset;
         m_desiredState.angle = new Rotation2d(m_turnEncoder.getPosition());
         //m_desiredState.angle = new Rotation2d(m_turnCANcoder.getPosition());
+        
+        /* COMMENT THIS OUT ONCE CONSTATNS ARE SET */
+        SmartDashboard.putNumber("Angle Offset " + Name, m_turnEncoder.getPosition());
+
         m_driveEncoder.setPosition(0.0);
     }
 

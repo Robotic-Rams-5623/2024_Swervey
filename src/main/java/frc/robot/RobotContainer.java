@@ -6,28 +6,37 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.SwerveDriveBase;
+import frc.robot.subsystems.Climb;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 
 public class RobotContainer {
-  // The robot's subsystems and commands are defined here...
+  /**
+   * ROBOT SUBSYSTEM DEFINITIONS
+   */
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final SwerveDriveBase m_drive = new SwerveDriveBase();
+  private final Climb m_climb = new Climb();
 
   /**
    * SET DRIVER CONTROLLER OBJECTS
    */
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverUSBPort);
-  /*private final CommandXboxController m_actionController = 
-      new CommandXboxController(OperatorConstants.kActionUSBPort);*/
+
+  private final CommandXboxController m_actionController = 
+      new CommandXboxController(OperatorConstants.kActionUSBPort);
+
+
+
+
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -54,6 +63,9 @@ public class RobotContainer {
     );
   }
 
+
+
+
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
@@ -67,12 +79,47 @@ public class RobotContainer {
     /**
      * DRIVER CONTROLER BINDINGS
      */
+
+    /* SET SWERVE TO X-MODE */
     m_driverController.rightBumper().onTrue(
       new RunCommand(
         () -> m_drive.setPositionX(),
-        m_drive)
-    );
+        m_drive
+    ));
+    // END SET SWERVE TO X-MODE
+
+
+
+    /**
+     * ACTION CONTROLLER BINDINGS
+     */
+    
+    /* RUN CLIMBER UPWARDS */
+    m_actionController.povUp().onTrue( // UP
+      new StartEndCommand(
+        m_climb::Up,
+        m_climb::Stop,
+        m_climb
+    ));
+    // END CLIMBER UPWARDS
+
+    /* RUN CLIMBER DOWNWARDS */
+    m_actionController.povDown().onTrue( // DOWN
+      new StartEndCommand(
+        m_climb::Down,
+        m_climb::Stop,
+        m_climb
+    ));
+    // END CLIMBER DOWNWARDS
+
+    /* CONTROLLER COMMAND */
+    // END CONTROLLER COMMAND
+
+    /* CONTROLLER COMMAND */
+    // END CONTROLLER COMMAND
   }
+
+
 
 
 
