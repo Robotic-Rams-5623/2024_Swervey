@@ -54,6 +54,27 @@ public final class Constants {
     public static final int kTiltAnglePotAIid = 0;
   }
 
+public static class Intake {
+  /** INTAKE SUBSYSTEM PARAMETERS */
+  public static final int kIntakeProxDIport = 0;
+  public static final double kSpeedIn = 0.3; // Percent Output
+  public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)
+
+  /** CLIMB MOTOR CONFIGURATION CONSTANTS */
+  public static final double kClosedRampRate = 0.5;
+  public static final double kOpenRampRate = 0.5;
+  public static final int kCurrentLimit = 20;
+  public static final boolean kMotorInverted = false;
+  public static final IdleMode kIdleMode = IdleMode.kBrake;
+
+  /** NOTE PRESENCE GLOBAL VARIABLE */
+  public static enum notePosition {
+    None,
+    Loaded,
+    Firing
+  }
+}
+
 public static class Climb{
   /** CLIMB SUBSYSTEM PARAMETERS */
   public static final double kSpeedUp = 0.5; // Percent Output
