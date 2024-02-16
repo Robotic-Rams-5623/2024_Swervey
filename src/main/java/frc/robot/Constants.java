@@ -28,17 +28,17 @@ public final class Constants {
 
   public static class MotorIDs {
     /** SPARK FLEX CAN IDs */
-    public static final int kFrontLeftDriveCANid = 11;
-    public static final int kFrontLeftTurnCANid = 12;
+    public static final int kFrontLeftDriveCANid = 17;
+    public static final int kFrontLeftTurnCANid = 18;
     public static final int kFrontLeftCANcoderid = 22;
-    public static final int kFrontRightDriveCANid = 13;
-    public static final int kFrontRightTurnCANid = 14;
+    public static final int kFrontRightDriveCANid = 15;
+    public static final int kFrontRightTurnCANid = 16;
     public static final int kFrontRightCANcoderid = 24;
-    public static final int kBackLeftDriveCANid = 15;
-    public static final int kBackLeftTurnCANid = 16;
+    public static final int kBackLeftDriveCANid = 11;
+    public static final int kBackLeftTurnCANid = 12;
     public static final int kBackLeftCANcoderid = 26;
-    public static final int kBackRightDriveCANid = 17;
-    public static final int kBackRightTurnCANid = 18;
+    public static final int kBackRightDriveCANid = 13;
+    public static final int kBackRightTurnCANid = 14;
     public static final int kBackRightCANcoderid = 28;
 
     /** Spark max climb ids */
@@ -119,11 +119,10 @@ public static class Tilter{
     /*
      *  {Need a pretty ascii image to describe angle offset directions}
      */
-    public static final double kFrontLeftAngleOffset = -Math.PI / 2; // -pi/2 = -90deg
-    public static final double kFrontRightAngleOffset = 0; // 0 = 0deg
-    public static final double kBackLeftAngleOffset = Math.PI; // pi = 1800deg
-    public static final double kBackRightAngleOffset = Math.PI / 2; // pi/2 = 90deg
-
+    public static final double kFrontLeftAngleOffset = 0; // 0 Degrees
+    public static final double kFrontRightAngleOffset = -Math.PI; // 90 degrees
+    public static final double kBackLeftAngleOffset = Math.PI; // 270 degrees
+    public static final double kBackRightAngleOffset = 0; // 0 degrees
     // Distance between the centers of the left and right wheel in the robot
     public static final double kWheelBase = Units.inchesToMeters(22.0);
     // Distance between the centers of the front and back wheels on the robot
@@ -137,8 +136,8 @@ public static class Tilter{
     );
 
     /** SPEED LIMIT CONSTANTS */
-    public static final double kMaxDriveMeterPerSec = 2.0; // 2.0 meters/sec = 6.56 ft/sec
-    public static final double kMaxTurnRadianPerSec = 2 * Math.PI; // 2pi/sec = 360 deg/sec!
+    public static final double kMaxDriveMeterPerSec = 0.5; // 2.0 meters/sec = 6.56 ft/sec
+    public static final double kMaxTurnRadianPerSec = 0.5 * Math.PI; // 2pi/sec = 360 deg/sec!
 
     /** SLEW RATE CONSTANT VALUES */
     public static final double kMagnitudeSlewRate = 0.0;
@@ -183,7 +182,7 @@ public static class Tilter{
     public static final double kDriveMinOutput = -1;
     public static final double kDriveMaxOutput = 1;
 
-    public static final double kTurnP = 1;
+    public static final double kTurnP = 0.04;
     public static final double kTurnI = 0;
     public static final double kTurnD = 0;
     public static final double kTurnFF = 0;
@@ -206,7 +205,7 @@ public static class Tilter{
    * like in swerve drive.
    */
   public static class MotorParams {
-    public static final double kFreeSpeedRPMVortex = 6784;
+    public static final double kFreeSpeedRPMVortex = 3000;//6784;
     public static final double kFreeSpeedRPMNeo = 5676;
     public static final double kFreeSpeedRPM550 = 11000;
   }

@@ -1,13 +1,12 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.SparkAbsoluteEncoder.Type;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -24,7 +23,7 @@ import frc.robot.Constants;
  * If the internal 3 Phrase Hall Effect Sensors in the Vortex motors may not work for the
  * angle encoder which should be an encoder capable of an Absolute position reading.
  */
-public class SwerveModule {
+public class SwerveModuleBuilder {
     private final CANSparkFlex m_driveMotor;
     private final CANSparkFlex m_turnMotor; // Could be a smaller less complex motor if needed
 
@@ -34,6 +33,8 @@ public class SwerveModule {
 
     private final SparkPIDController m_drivePIDControl;
     private final SparkPIDController m_turnPIDControl;
+
+    public Rotation2d lastAngle;
     
     /*
      * Used to set the actual angle of the wheel relative to the absolute position of the encoder.
@@ -48,7 +49,7 @@ public class SwerveModule {
     /*
      * SwerveModule function that all four modules will be configured with.
      */
-    public SwerveModule(int driveCANid, int turnCANid, double angleOffset, String Name) {
+    public SwerveModuleBuilder(int driveCANid, int turnCANid, int coderCANid, double angleOffset, String Name) {
         /* Create the drive motor object and reset settings */
         m_driveMotor = new CANSparkFlex(driveCANid, MotorType.kBrushless);
         m_driveMotor.restoreFactoryDefaults();
@@ -64,8 +65,8 @@ public class SwerveModule {
          * the wheel are in and the software will just know what direction the
          * wheels are facing.
         */
-        m_driveEncoder = m_driveMotor.getEncoder();
-        m_turnEncoder = m_turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
+        m_driveEncoder = m_driveMotor.getEncoder(com.revrobotics.SparkRelativeEncoder.Type.kHallSensor, 42);
+        m_turnEncoder = m_turnMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
         //m_turnCANcoder = new CANcoder(turnCANid);
 
         /* 
@@ -76,7 +77,6 @@ public class SwerveModule {
         m_drivePIDControl.setFeedbackDevice(m_driveEncoder);
         m_turnPIDControl = m_turnMotor.getPIDController();
         m_turnPIDControl.setFeedbackDevice(m_turnEncoder);
-        //m_turnPIDControl.setFeedbackDevice(m_turnCANcoder);
 
         /*
          * PID Controller Settings
@@ -146,9 +146,56 @@ public class SwerveModule {
         //m_desiredState.angle = new Rotation2d(m_turnCANcoder.getPosition());
         
         /* COMMENT THIS OUT ONCE CONSTATNS ARE SET */
-        SmartDashboard.putNumber("Angle Offset " + Name, m_turnEncoder.getPosition());
+        //SmartDashboard.putNumber("Angle Offset " + Name, m_turnEncoder.getPosition());
 
-        m_driveEncoder.setPosition(0.0);
+        resetEncoders();
+    }
+
+
+    /**
+     * Optimize Turning
+     * 
+     * @return SwerveModuleState
+     */
+    public SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d currentAngle) {
+        double targetAngle = orientTo2Pi(currentAngle.getDegrees(), desiredState.angle.getDegrees());
+        double targetSpeed = desiredState.speedMetersPerSecond;
+        double delta = targetAngle - currentAngle.getDegrees();
+        if(Math.abs(delta) > 90){
+            targetSpeed = -targetSpeed;
+            targetAngle = delta > 90 ? (targetAngle -= 180) : (targetAngle += 180);
+        }
+        return new SwerveModuleState(targetSpeed, Rotation2d.fromDegrees(targetAngle));
+    }
+
+    /**
+     * 
+     * 
+     * @return
+     */
+    public double orientTo2Pi(double curAngle, double newAngle){
+        double lowerBound;
+        double upperBound;
+        double lowerOffset = curAngle % 360;
+
+        //Whether the angle is above a full rotation
+        if(lowerOffset >= 0){
+            lowerBound = curAngle - lowerOffset;
+            upperBound = curAngle + (360 - lowerOffset);
+        } else {
+            upperBound = curAngle - lowerOffset;
+            lowerBound = curAngle + (360 + lowerOffset);
+        }
+        while(newAngle < lowerBound){
+            newAngle += 360;
+        }
+        while(newAngle > upperBound){
+            newAngle -= 360;
+        }
+        if(newAngle - curAngle > 180){
+            newAngle += 360;
+        }
+        return newAngle;
     }
 
     /**
@@ -160,23 +207,8 @@ public class SwerveModule {
      */
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-            m_driveEncoder.getVelocity(),
-            new Rotation2d(m_turnEncoder.getPosition() - m_angleOffset)
-            //new Rotation2d(m_turnCANcoder.getPosition() - m_angleOffset)
-        );
-    }
-
-    /**
-     * Returns the current position of the module.Make sure to apply
-     * the angular offset of the encoder angle to get the position
-     * relative to the chassis.
-     * 
-     * @return The current position of the swerve module
-     */
-    public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(
-            m_driveEncoder.getPosition(),
-            new Rotation2d(m_turnEncoder.getPosition() - m_angleOffset)
+            getDriveVelocity(),
+            getAbsoluteAngle()
             //new Rotation2d(m_turnCANcoder.getPosition() - m_angleOffset)
         );
     }
@@ -206,9 +238,64 @@ public class SwerveModule {
     }
 
     /**
+     * 
+     */
+    // private void setAngle (SwerveModuleState desiredState) {
+    //     Rotation2d angle = 
+    //         (Math.abs(desiredState.speedMetersPerSecond) 
+    //             <= (Constants.Swerve.kMaxDriveMeterPerSec * 0.01)) 
+    //             ? lastAngle : desiredState.angle;
+    //     m_turnPIDControl.setReference(angle.getDegrees(), CANSparkBase.ControlType.kPosition);
+    // }
+
+    /**
      * Set all the encoder in the swerve module to zero.
      */
     public void resetEncoders() {
         m_driveEncoder.setPosition(0);
+    }
+
+    public double getTurningVelocity() {
+        return m_turnEncoder.getVelocity();
+    }
+
+    public double getDriveVelocity() {
+        return m_driveEncoder.getVelocity();
+    }
+
+    public Rotation2d getAbsoluteAngle() {
+        return Rotation2d.fromRadians(m_turnEncoder.getPosition());
+    }
+
+    public double getAngle() {
+        return m_turnEncoder.getPosition();
+    }
+
+    /**
+     * Returns the current position of the module.Make sure to apply
+     * the angular offset of the encoder angle to get the position
+     * relative to the chassis.
+     * 
+     * @return The current position of the swerve module
+     */
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(
+            m_driveEncoder.getPosition(), getAbsoluteAngle());
+    }
+
+    /**
+     * Stop Motors
+     */
+    public void stop() {
+        m_driveMotor.set(0);
+        m_turnMotor.set(0);
+    }
+
+    /**
+     * Called once every scheduler run
+     */
+    public void periodic() {
+        SmartDashboard.putNumber("Drive Velocity", getDriveVelocity());
+        //SmartDashboard.putNumber("Turn Angle", getAngle());
     }
 }
