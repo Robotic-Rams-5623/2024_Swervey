@@ -105,7 +105,20 @@ public static class Climb{
 }
 
 public static class Launcher{
+  // LAUNCHER MOTOR CONFIGURATION CONSTANTS
+  public static final double kSpeedPush = 0.5;
+  public static final double kSpeedPull = 0.5;
+  public static final double kClosedRampRate = 0;
+  public static final double kOpenRampRate = 0;
+  public static final boolean kMotorInverted = false;
+  public static final IdleMode kIdleMode = IdleMode.kBrake;
+  public static final int kCurrentLimit = 30;
 
+  // LAUNCHER EXTERNALS CONFIGURATION CONSTANTS
+  public static final int kLauncherServoid = 41;
+  public static final double kServoOn = 1.0;
+  public static final double kServoOff = 1.0;
+  // public static final int kLauncherSensorid = 0;
 }
 
 public static class Tilter{
