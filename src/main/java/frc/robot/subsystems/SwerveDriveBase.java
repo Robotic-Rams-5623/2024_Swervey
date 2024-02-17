@@ -22,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -46,37 +47,12 @@ public class SwerveDriveBase extends SubsystemBase {
    *  (1,2) First number corresponds to the turn motor controller
    * and the second number corresponds to the drive motor controller.
   */
-  private final SwerveModuleBuilder m_frontLeft = new SwerveModuleBuilder(
-    Constants.MotorIDs.kFrontLeftDriveCANid,
-    Constants.MotorIDs.kFrontLeftTurnCANid,
-    Constants.MotorIDs.kFrontLeftCANcoderid,
-    Constants.Swerve.kFrontLeftAngleOffset,
-    "Front Left"
-  );
 
-  private final SwerveModuleBuilder m_frontRight = new SwerveModuleBuilder(
-    Constants.MotorIDs.kFrontRightDriveCANid,
-    Constants.MotorIDs.kFrontRightTurnCANid,
-    Constants.MotorIDs.kFrontRightCANcoderid,
-    Constants.Swerve.kFrontRightAngleOffset,
-    "Front Right"
-  );
-
-  private final SwerveModuleBuilder m_backLeft = new SwerveModuleBuilder(
-    Constants.MotorIDs.kBackLeftDriveCANid,
-    Constants.MotorIDs.kBackLeftTurnCANid,
-    Constants.MotorIDs.kBackLeftCANcoderid,
-    Constants.Swerve.kBackLeftAngleOffset,
-    "Back Left"
-  );
-
-  private final SwerveModuleBuilder m_backRight = new SwerveModuleBuilder(
-    Constants.MotorIDs.kBackRightDriveCANid,
-    Constants.MotorIDs.kBackRightTurnCANid,
-    Constants.MotorIDs.kBackRightCANcoderid,
-    Constants.Swerve.kBackRightAngleOffset,
-    "Back Right"
-  );
+  private SwerveModule[] m_swerveModules;
+  private SwerveDriveOdometry swerveOdometry;
+  private SwerveDriveKinematics swerveKinematics;
+  
+  private Field2d m_field;
 
   /** 
    * Create the gyro sensor that will help with the odometry of the driving
@@ -90,28 +66,86 @@ public class SwerveDriveBase extends SubsystemBase {
    * These values are a Slew rate filter for controlling the lateral
    * acceleration.
    */
-  private double m_currentRotation = 0.0;
-  private double m_currentTranslationDir = 0.0;
-  private double m_currentTranslationMag = 0.0;
+  // private double m_currentRotation = 0.0;
+  // private double m_currentTranslationDir = 0.0;
+  // private double m_currentTranslationMag = 0.0;
 
-  private SlewRateLimiter m_magLimiter = new SlewRateLimiter(Constants.Swerve.kMagnitudeSlewRate);
-  private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(Constants.Swerve.kRotationSlewRate);
-  private double m_prevTime = WPIUtilJNI.now() * 1e-6;
-
-    SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
-      Constants.Swerve.kDriveKinematics,
-      Rotation2d.fromDegrees(m_gyro.getYaw()),
-      new SwerveModulePosition[] {
-          m_frontLeft.getPosition(),
-          m_frontRight.getPosition(),
-          m_backLeft.getPosition(),
-          m_backRight.getPosition()
-      });
+  // private SlewRateLimiter m_magLimiter = new SlewRateLimiter(Constants.Swerve.kMagnitudeSlewRate);
+  // private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(Constants.Swerve.kRotationSlewRate);
+  // private double m_prevTime = WPIUtilJNI.now() * 1e-6;
 
   public SwerveDriveBase() {
-    publisher = NetworkTableInstance.getDefault().
-      getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).
-      publish();
+    publisher = NetworkTableInstance.getDefault().getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).publish();
+    
+    m_swerveModules = new SwerveModule[] {
+      new SwerveModule("Front Left",
+        Constants.MotorIDs.kFrontLeftDriveCANid,
+        Constants.MotorIDs.kFrontLeftTurnCANid,
+        Constants.MotorIDs.kFrontLeftCANcoderid,
+        Constants.Swerve.kFrontLeftAngleOffset,
+        false,
+        false,
+        false,
+        false),
+      new SwerveModule("Front Right",
+        Constants.MotorIDs.kFrontRightDriveCANid,
+        Constants.MotorIDs.kFrontRightTurnCANid,
+        Constants.MotorIDs.kFrontRightCANcoderid,
+        Constants.Swerve.kFrontRightAngleOffset,
+        false,
+        false,
+        false,
+        false),
+      new SwerveModule("Back Left",
+        Constants.MotorIDs.kBackLeftDriveCANid,
+        Constants.MotorIDs.kBackLeftTurnCANid,
+        Constants.MotorIDs.kBackLeftCANcoderid,
+        Constants.Swerve.kBackLeftAngleOffset,
+        false,
+        false,
+        false,
+        false),
+      new SwerveModule("Back Right",
+        Constants.MotorIDs.kBackRightDriveCANid,
+        Constants.MotorIDs.kBackRightTurnCANid,
+        Constants.MotorIDs.kBackRightCANcoderid,
+        Constants.Swerve.kBackRightAngleOffset,
+        false,
+        false,
+        false,
+        false)
+    };
+
+    swerveOdometry = new SwerveDriveOdometry(
+      Constants.Swerve.kDriveKinematics,
+      getYaw(),
+      new SwerveModulePosition[] {
+        m_swerveModules[0].getPosition(),
+        m_swerveModules[1].getPosition(),
+        m_swerveModules[2].getPosition(),
+        m_swerveModules[3].getPosition()
+      });
+
+      m_field = new Field2d();
+
+      SmartDashboard.putData("Field", m_field);
+  }
+
+  /**
+   * Get the angle heading of the robot about the z- axis.
+   * 
+   * @return Rotation2d of robot Yaw angle
+   */
+  public Rotation2d getYaw() {
+    return Rotation2d.fromDegrees(m_gyro.getYaw());
+  }
+
+  /** 
+   * ZERO ROBOT HEADING
+   * sets the heading of the robot to zero
+   */
+  public void zeroHeading() {
+    m_gyro.reset();
   }
 
   /**
@@ -120,102 +154,65 @@ public class SwerveDriveBase extends SubsystemBase {
    */
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Front Left Angle", m_frontLeft.getAngle());
-    SmartDashboard.putNumber("Front Right Angle", m_frontRight.getAngle());
-    SmartDashboard.putNumber("Back Left Angle", m_backLeft.getAngle());
-    SmartDashboard.putNumber("Back Right Angle", m_backRight.getAngle());
     /** 
      * Update the odemetry in the periodic block so it keeps getting updated
      */
-    m_odometry.update(
-      Rotation2d.fromDegrees(m_gyro.getYaw()),
+    swerveOdometry.update(
+      getYaw(),
       new SwerveModulePosition[] {
-        m_frontLeft.getPosition(),
-        m_frontRight.getPosition(),
-        m_backLeft.getPosition(),
-        m_backRight.getPosition()
+        m_swerveModules[0].getPosition(),
+        m_swerveModules[1].getPosition(),
+        m_swerveModules[2].getPosition(),
+        m_swerveModules[3].getPosition()
       });
 
-      publisher.set(new SwerveModuleState[] {
-        m_frontLeft.getState(),
-        m_frontRight.getState(),
-        m_backLeft.getState(),
-        m_backRight.getState()
-      });
+      m_field.setRobotPose(getPose());
+      
+      for (SwerveModule mod : m_swerveModules) {
+        SmartDashboard.putNumber(
+          mod.modName + " CANcoder", mod.getCANcoderAngle().getDegrees());
+        SmartDashboard.putNumber(
+          mod.modName + " Turn", mod.getWheelAngle().getDegrees());
+        SmartDashboard.putNumber(
+          mod.modName + " Position", mod.getDriveEncoderPosition());
+        SmartDashboard.putNumber(
+          mod.modName + " Drive Velocity", mod.getDriveVelocity());
+      }
   }
 
-
-
   /**
-   * Get the currently estimated position of the robot
+   * Get the currently estimated position of the robot.
    * 
-   * @param 
+   * @return Pose2d position of the robot
    */
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    return swerveOdometry.getPoseMeters();
   }
 
+  /**
+   * Reset the currently estimated position of the robot.
+   * 
+   * @param pose
+   */
   public void resetOdometry(Pose2d pose) {
-    m_odometry.resetPosition(
-      Rotation2d.fromDegrees(m_gyro.getYaw()),
+    swerveOdometry.resetPosition(
+      getYaw(),
       new SwerveModulePosition[] {
-        m_frontLeft.getPosition(),
-        m_frontRight.getPosition(),
-        m_backLeft.getPosition(),
-        m_backRight.getPosition()
-      },
-      pose);
+        m_swerveModules[0].getPosition(),
+        m_swerveModules[1].getPosition(),
+        m_swerveModules[2].getPosition(),
+        m_swerveModules[3].getPosition()
+      }, pose
+    );
   }
 
-  public Command teleopDrive(
-    DoubleSupplier translation, DoubleSupplier strafe, DoubleSupplier rotation,
-    BooleanSupplier fieldRelative, BooleanSupplier openLoop) {
-
-      return run(() -> {
-            double translationVal = MathUtil.applyDeadband(translation.getAsDouble(), Constants.OperatorConstants.kDriverDeadband);
-            double strafeVal = MathUtil.applyDeadband(strafe.getAsDouble(), Constants.OperatorConstants.kDriverDeadband);
-            double rotationVal = MathUtil.applyDeadband(rotation.getAsDouble(), Constants.OperatorConstants.kDriverDeadband);
-
-            
-            
-            boolean isOpenLoop = openLoop.getAsBoolean();
-
-            translationVal *= Constants.Swerve.kMaxDriveMeterPerSec;
-
-            strafeVal *= Constants.Swerve.kMaxDriveMeterPerSec;
-
-            rotationVal *= Constants.Swerve.kMaxTurnRadianPerSec;
-            drive(translationVal, strafeVal, rotationVal, fieldRelative.getAsBoolean(), isOpenLoop);
-        }).withName("Teleop Drive");
-  
-  }
-  
-  /**
-   * Standard drive control for the drive train. RobotContainer will use this to control
-   * the robot with the controller.
-   */
-  public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean isOpenLoop) {
-    ChassisSpeeds targetChassisSpeeds = fieldRelative
-        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, getHeading())
-        : new ChassisSpeeds(xSpeed, ySpeed, rot);
-
-    setChassisSpeeds(targetChassisSpeeds, isOpenLoop, false);
-  }
-
-  public void setChassisSpeeds(ChassisSpeeds targetChassisSpeeds, boolean openLoop, boolean steerInPlace) {
-    setModuleStates(Constants.Swerve.kDriveKinematics.toSwerveModuleStates(targetChassisSpeeds));//, openLoop, steerInPlace);
-}
-
-  /**
-   * SET WHEELS TO X SHAPED CONFIGURATION
-   * Sets the wheels so they are in an X position. This is great for locking up the drive
-   * and making it very difficult to move for either defense or balancing on a platform.
-   */
-  public void setPositionX() {
-    m_frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
-    m_frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
-    m_backLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
-    m_backRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
+  public SwerveModuleState[] getStates() {
+    return new SwerveModuleState[] {
+      m_swerveModules[0].getState(),
+      m_swerveModules[1].getState(),
+      m_swerveModules[2].getState(),
+      m_swerveModules[3].getState()
+    };
   }
 
   /**
@@ -227,31 +224,38 @@ public class SwerveDriveBase extends SubsystemBase {
   public void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(
         desiredStates, Constants.Swerve.kMaxDriveMeterPerSec);
-    m_frontLeft.setDesiredState(desiredStates[0]);
-    m_frontRight.setDesiredState(desiredStates[1]);
-    m_backLeft.setDesiredState(desiredStates[2]);
-    m_backRight.setDesiredState(desiredStates[3]);
+    
+    m_swerveModules[0].setState(desiredStates[0], false, true);
+    m_swerveModules[1].setState(desiredStates[1], false, true);
+    m_swerveModules[2].setState(desiredStates[2], false, true);
+    m_swerveModules[3].setState(desiredStates[3], false, true);
   }
 
-  /**
-   * RESET THE DRIVE ENCODERS
-   * Resets the drive encoders to zero. It will not reset the turn encoders because
-   * those are in absolute mode and can not be reset.
-   */
-  public void resetEncoders() {
-    m_frontLeft.resetEncoders();
-    m_backLeft.resetEncoders();
-    m_frontRight.resetEncoders();
-    m_backRight.resetEncoders();
+  public void drive(
+    Translation2d translation,
+    double rotation,
+    boolean fieldRelative,
+    boolean isOpenLoop) {
+      
+      SwerveModuleState[] m_SwerveModuleStates = 
+        Constants.Swerve.kDriveKinematics.toSwerveModuleStates(
+          fieldRelative
+              ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                translation.getX(), translation.getY(), rotation, getYaw())
+                : new ChassisSpeeds(
+                  translation.getX(), translation.getY(), rotation));
+      
+      SwerveDriveKinematics.desaturateWheelSpeeds(m_SwerveModuleStates, Constants.Swerve.kMaxDriveMeterPerSec);
+
+      m_swerveModules[0].setState(m_SwerveModuleStates[0], isOpenLoop, true);
+      m_swerveModules[1].setState(m_SwerveModuleStates[1], isOpenLoop, true);
+      m_swerveModules[2].setState(m_SwerveModuleStates[2], isOpenLoop, true);
+      m_swerveModules[3].setState(m_SwerveModuleStates[3], isOpenLoop, true);
+      
   }
 
-  /** 
-   * ZERO ROBOT HEADING
-   * sets the heading of the robot to zero
-   */
-  public void zeroHeading() {
-    m_gyro.reset();
-  }
+
+
 
   /**
    * GET ROBOT HEADING

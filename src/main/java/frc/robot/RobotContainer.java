@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
+import frc.robot.commands.teleopDrive;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.SwerveDriveBase;
 import frc.robot.subsystems.Climb;
@@ -50,14 +51,12 @@ public class RobotContainer {
      * for the robot driving)
      */
     m_drive.setDefaultCommand(
-      m_drive.teleopDrive(
-        () -> m_driverController.getLeftY(), 
-        () -> m_driverController.getLeftX(), 
-        () -> m_driverController.getRightX(), 
-        () -> true,
-        () -> true
-      )
-    );
+      new teleopDrive(
+        m_drive, 
+        () -> -m_driverController.getLeftY(),
+        () -> -m_driverController.getLeftX(),
+        () -> -m_driverController.getRightX(),
+        () -> true));
   }
 
 
@@ -78,11 +77,11 @@ public class RobotContainer {
      */
 
     /* SET SWERVE TO X-MODE */
-    m_driverController.rightBumper().onTrue(
-      new RunCommand(
-        () -> m_drive.setPositionX(),
-        m_drive
-    ));
+    // m_driverController.rightBumper().onTrue(
+    //   new RunCommand(
+    //     () -> m_drive.setPositionX(),
+    //     m_drive
+    // ));
     // END SET SWERVE TO X-MODE
 
 

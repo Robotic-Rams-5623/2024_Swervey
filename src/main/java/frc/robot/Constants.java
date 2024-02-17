@@ -212,6 +212,8 @@ public static class Tilter{
     // Limit current to that of the brakers for now, maybe lower if we blow any
     public static final int kDriveMotorCurrentLimit = 40; // amps
     public static final int kTurnMotorCurrentLimit = 40; // amps
+
+    public static final double kSpeedDeadband = 0.05;
   }
 
 
