@@ -137,7 +137,8 @@ public static class Tilter{
 
     /** SPEED LIMIT CONSTANTS */
     public static final double kMaxDriveMeterPerSec = 0.5; // 2.0 meters/sec = 6.56 ft/sec
-    public static final double kMaxTurnRadianPerSec = 0.5 * Math.PI; // 2pi/sec = 360 deg/sec!
+    public static final double kMaxTurnRadianPerSec = Math.PI / 4; // 2pi/sec = 360 deg/sec!
+    public static final double kMaxTurnAccelerationRadiansPerSecSquared = Math.PI * 2;
 
     /** SLEW RATE CONSTANT VALUES */
     public static final double kMagnitudeSlewRate = 0.0;
@@ -181,6 +182,8 @@ public static class Tilter{
     public static final double kDriveFF = 1 / kDriveWheelFreeSpeedRps;
     public static final double kDriveMinOutput = -1;
     public static final double kDriveMaxOutput = 1;
+    public static final double kDriveS = 0.667;
+    public static final double kDriveV = 2.44;
 
     public static final double kTurnP = 0.04;
     public static final double kTurnI = 0;
