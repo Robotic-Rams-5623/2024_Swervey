@@ -15,7 +15,10 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static class OperatorConstants {
+
+
+  
+public static class OperatorConstants {
   public static final int kDriverUSBPort = 0;
   public static final double kDriverDeadband = 0.05;
   public static final int kActionUSBPort = 1;
@@ -48,8 +51,7 @@ public static class MotorIDs {
   public static final int kLaunchFeedServoid = 0;
 
   /** NOTE HANDLER/TILTER MECHANISM IDs */
-  public static final int kTilterMotorCANid = 34;
-  public static final int kTiltAnglePotAIid = 0;
+  public static final int kTiltMotorCANid = 34;
 }
 
 
@@ -57,20 +59,30 @@ public static class MotorIDs {
 public static class Handler {
   /** INTAKE SUBSYSTEM PARAMETERS */
   public static final int kHandlerProxDIport = 0;
+  public static final int kTiltPotAIport = 0;
+
+  public static final double kTiltMaxRange = 100; // What is the angle at 5 volts of the pot
+  public static final double kTiltZeroAngle = 100; // What is the angle at 0 volts of the pot
+  
   // public static final double kSpeedIn = 0.3; // Percent Output
   // public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)
-  // LAUNCHER EXTERNALS CONFIGURATION CONSTANTS
-  public static final int kLauncherServoid = 41;
-  public static final double kServoOn = 1.0;
-  public static final double kServoOff = 1.0;
-  // public static final int kLauncherSensorid = 0;
-  
-  /** HANDLER MOTOR CONFIGURATION CONSTANTS */
-  public static final double kClosedRampRate = 0.5;
-  public static final double kOpenRampRate = 0.5;
-  public static final int kCurrentLimit = 20;
+
+  /** TITLER MOTOR CONFIGURATION CONSTANTS */
+  public static final double kClosedRampRate = 0.75;
+  public static final double kOpenRampRate = 0.75;
+  public static final int kCurrentLimit = 30;
   public static final boolean kMotorInverted = false;
   public static final IdleMode kIdleMode = IdleMode.kBrake;
+
+  /** TILTER PID CONTROLLER CONSTANTS */
+  public static final double kP = 0.01; // Proportional Constant
+  public static final double kI = 0; // Integral Constant
+  public static final double kD = 0; // Derivative Constant (LEAVE AT ZERO)
+  public static final double kIz = 0; // Integral deadzone (Zero disables the deadzone)
+  public static final double kFF = 0.001; // Feed Forward Gain
+  public static final double kMaxOutput = 0.6; // Percent Output to Raise the Mechanism
+  public static final double kMinOutput = -0.3; // Negative Percent Output to Lower Mechanism
+  public static final double kMaxRPM = 3000; // Max RPM in Closed Loop Mode
 }
 
 
