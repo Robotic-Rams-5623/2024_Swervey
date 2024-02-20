@@ -6,6 +6,8 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Servo;
@@ -15,14 +17,20 @@ import frc.robot.Constants;
 
 public class Launcher extends SubsystemBase {
   /** Creates a new Launcher. */
-  
-private final CANSparkMax m_LauncherMotorLeft = new CANSparkMax(Constants.MotorIDs.kLLauncherMotorCANid, MotorType.kBrushless);
-private final CANSparkMax m_LauncherMotorRight = new CANSparkMax(Constants.MotorIDs.kRLauncherMotorCANid, MotorType.kBrushless);
+  private CANSparkMax m_LauncherMotorLeft = new CANSparkMax(Constants.MotorIDs.kLLauncherMotorCANid, MotorType.kBrushless);
+  private CANSparkMax m_LauncherMotorRight = new CANSparkMax(Constants.MotorIDs.kRLauncherMotorCANid, MotorType.kBrushless);
 
-/* The servo is really just a electro actuator. Need to find a way to give it 12V
- * Most likely from the switchable port on the PDH using a 5 to 10 amp fuse. */
-// private final Servo m_LauncherServo = new Servo(Constants.Launcher.kLauncherServoid);
-private final PowerDistribution m_powerHub = new PowerDistribution(0, ModuleType.kRev); // PROBABLY PUT THIS IN THE hANDLER SUBSYSTEM
+  private RelativeEncoder m_EncoderLeft;
+  private RelativeEncoder m_EncoderRight;
+
+  // private PIDController m_LauncherPIDController;
+  private SparkPIDController m_LauncherPIDController;
+  private double kP, kI, kD, kIz, kFF;
+
+  /* The servo is really just a electro actuator. Need to find a way to give it 12V
+   * Most likely from the switchable port on the PDH using a 5 to 10 amp fuse. */
+  // private final Servo m_LauncherServo = new Servo(Constants.Launcher.kLauncherServoid);
+  // private PowerDistribution m_powerHub = new PowerDistribution(0, ModuleType.kRev); // PROBABLY PUT THIS IN THE hANDLER SUBSYSTEM
 
   public Launcher() {
     /*
@@ -62,71 +70,188 @@ private final PowerDistribution m_powerHub = new PowerDistribution(0, ModuleType
     m_LauncherMotorLeft.setSmartCurrentLimit(Constants.Launcher.kCurrentLimit); // 30 Amp Limit (40 Amp Breaker)
     m_LauncherMotorRight.setSmartCurrentLimit(Constants.Launcher.kCurrentLimit); // 30 Amp Limit (40 Amp Breaker)
 
+    /*    Set Follower
+     * Set the right motor to follow the left motor because they will be doing
+     * the same things anyway. It will be easier to just command one motor to do
+     * something then it will be to command two at the same time.
+     */
+    m_LauncherMotorRight.follow(m_LauncherMotorLeft);
+
+    /*    Relative Encoder
+     * Create an encoder object for each motor that is made from the integrated
+     * hall effect encoder. The encoder will be used to monitor and control the
+     * speed in RPM of the motor.
+     */
+    m_EncoderLeft = m_LauncherMotorLeft.getEncoder();
+    m_EncoderRight = m_LauncherMotorRight.getEncoder();
+
+    m_EncoderLeft.setInverted(Constants.Launcher.kEncoderLeftInverted);
+    m_EncoderRight.setInverted(Constants.Launcher.kEncoderRightInverted);
+
+    m_EncoderLeft.setVelocityConversionFactor(Constants.Launcher.kEncoderVelConversion);
+    m_EncoderRight.setVelocityConversionFactor(Constants.Launcher.kEncoderVelConversion);
+
+    // Don't really care about position because the launcher only monitors/controls velocity
+    m_EncoderLeft.setPosition(0.0);
+    m_EncoderRight.setPosition(0.0);
+
+    /*    PID Controller
+     * Can use either the wpilib PIDController or the Spark PID controller. May be best
+     * to use the Spark PID Controller just because we are trying to control Spark hardware
+     * using the integrated Spark feedback device of the left motor since it is the master.
+     */
+    m_LauncherPIDController = m_LauncherMotorLeft.getPIDController();
+    m_LauncherPIDController.setFeedbackDevice(m_EncoderLeft);
+
+    /* Assign the local PID constants from the Constants file */
+    kP = Constants.Launcher.kP; 
+    kI = Constants.Launcher.kI;
+    kD = Constants.Launcher.kD; 
+    kIz = Constants.Launcher.kIz;
+    kFF = Constants.Launcher.kFF;
+
+    /* Set PID controller gains using local constants */
+    m_LauncherPIDController.setP(kP);
+    m_LauncherPIDController.setI(kI);
+    m_LauncherPIDController.setD(kD);
+    m_LauncherPIDController.setIZone(kIz);
+    m_LauncherPIDController.setFF(kFF);
+    m_LauncherPIDController.setOutputRange(Constants.Launcher.kMinOutput, Constants.Launcher.kMaxOutput);
+
+    /* Put the inital PID Gains on the Dashboard so they can be tweaked */
+    SmartDashboard.putNumber("Launcher kP", kP);
+    SmartDashboard.putNumber("Launcher kI", kI);
+    SmartDashboard.putNumber("Launcher kD", kD);
+    SmartDashboard.putNumber("Launcher kI Zone", kIz);
+    SmartDashboard.putNumber("Launcher kFeed Forward", kFF);
+
+    /* Save all the configurations to the motors */
     m_LauncherMotorLeft.burnFlash();
     m_LauncherMotorRight.burnFlash();
   }
 
+
+  
   /**
    * Stop motors from moving
    */
-  public final void Stop() {
+  public final void stop() {
     // Stop motors from running
-    m_LauncherMotorLeft.stopMotor();
-    m_LauncherMotorRight.stopMotor();
+    m_LauncherMotorLeft.stopMotor(); // Right motor follows left's lead
+    // m_LauncherMotorRight.stopMotor();
   }
 
-  public final void Retract() {
-    // Unsure about intended usage???
-  }
 
-  public final void Extend() {
-    // Unsure about intended usage???
-  }
-
+  
   /**
    * Load the note into the handler.
    * This is to pick the notes up from the floor or if we are good
    * at it, from the human player station!
-   * Whether or not the intake will move is dependent on the state of
-   * the note prox sensor which can be fed through the function as a
-   * parameter or overrided in the command call if needed (note is stuck).
-   * When launching the note we want to perform the same
+   * The logic for stopping the intake if there is a note loaded will
+   * be handled in the commad that is called for loading. To minimize
+   * the amount of duplicate code, we will pass a speed to the function
+   * that will either be slow for intaking the note or fast and quick
+   * for moving the note out of the way of the wheels before spin up.
+   * 
+   * @param speed of the motor in percent output
    */
-  public final void Load(double speed) {
-    m_LauncherMotorLeft.set(-Constants.Launcher.kSpeedPushLowRPM);
-    m_LauncherMotorRight.set(-Constants.Launcher.kSpeedPushLowRPM);
+  public final void load(double speed) {
+    m_LauncherMotorLeft.set(-speed); // Right motor follows left's lead
+    // m_LauncherMotorRight.set(-speed);
   }
 
+
+  
   /*
    * Launch the note. Launching is considered the wheels spinning in
    * such a way that the note is ejected from the robot. Left wheel
    * spinning CCW and right wheel spinning CW. The speed of the wheels
+   * is dependent on the scoring position and is passed into the function
+   * in terms of RPM so that the speed is more consistant time to time
+   * then if it were a percent output.
    * 
    * The delays and solenoid energizing will occur as part of the
    * command to launch the note and not part of the launch function.
+   * 
+   * @param speed of the motor in RPM to set the setpoint of the PID controller to.
    */
-  public final void Launch() {
-    m_LauncherMotorLeft.set(Constants.Launcher.kSpeedPush);
-    m_LauncherMotorRight.set(Constants.Launcher.kSpeedPush);
+  public final void setLaunchRPM (double speed) {
+    m_LauncherMotorLeft.setReference(speed, CANSparkMax.ControlType.kVelocity); // Right motor follows left's lead
+    // m_LauncherMotorRight.setReference(speed, CANSparkMax.ControlType.kVelocity);
   }
 
 
-
-
-  public final double GetSpeed() {
-    // Return current speed of motors
-
-    double launcher_speed = 0.0;
-    return launcher_speed;
+  
+  /*
+   * Launch the note. Launching is considered the wheels spinning in
+   * such a way that the note is ejected from the robot. Left wheel
+   * spinning CCW and right wheel spinning CW. 
+   *
+   * @param speed of the motor in percent output
+   */
+  public final void launch (double speed) {
+    m_LauncherMotorLeft.set(speed); // Right motor follows left's lead
+    // m_LauncherMotorRight.set(speed);
   }
 
-  /*  !! Don't know real implementation !!
-  * public final boolean ReadProxSensor():
-  *  return bool(m_LauncherFullSensor.read())
-  */
 
+  
+  /**
+   * Get the speed of the left launcher motor.
+   * 
+   * @return velocity of the left motor in RPM
+   */
+  public final double getVelocity() {
+    return m_EncoderLeft.getVelocity();
+  }
+
+
+  
+  /**
+   * UPDATE PID CONTROLLER PARAMETERS
+   * Using the values pulled from the smartdashboard, update the PID
+   * parameters and reburn the controller flash. This will amke tuning
+   * the gains much easier.
+   */
+  public final void updatePID() {
+    /* Pull PID gains from the dashboard */
+    double p = SmartDashboard.getNumber("Launcher kP", kP);
+    double i = SmartDashboard.getNumber("Launcher kI", kI);
+    double d = SmartDashboard.getNumber("Launcher kD", kD);
+    double iz = SmartDashboard.getNumber("Launcher kI Zone", kIz);
+    double ff = SmartDashboard.getNumber("Launcher kFeed Forward", kFF);
+
+    /* If the gains changed, update the controller */
+    if((kP != p)) { m_LauncherPIDController.setP(p); kP = p; }
+    if((kI != i)) { m_LauncherPIDController.setI(i); kI = i; }
+    if((kD != d)) { m_LauncherPIDController.setI(i); kD = d; }
+    if((kIz != iz)) { m_LauncherPIDController.setI(i); kIz = iz; }
+    if((kFF != ff)) { m_LauncherPIDController.setI(i); kFF = ff; }
+
+    /* Reset the I gain accumulation amount */
+    m_LauncherPIDController.setIAccum(0);
+
+    /* Need to reburn the flash of the controller in order for the changes to take affect */
+    m_LauncherMotorLeft.burnFlash();
+    m_LauncherMotorRight.burnFlash();
+  }
+
+
+  
+  /**
+   * Great place put the smartdashboard output data. Includes live PID controller tuning
+   * to make life a little easier.
+   */
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
+    /* SMART DASHBOARD */
+    SmartDashboard.putNumber("Launcher Motor Temp (F)", (m_ClimbMotor.getMotorTemperature() * 9 / 5) + 32); // Default is C, Convert to F
+    SmartDashboard.putNumber("Launcher Motor Current", m_ClimbMotor.getOutputCurrent());
+    SmartDashboard.putNumber("Launcher Motor Input Voltage", m_ClimbMotor.getBusVoltage());
+    SmartDashboard.putNumber("Launcher Motor Duty Cycle", m_ClimbMotor.getAppliedOutput());
+    // SmartDashboard.putNumber("Launcher Position", getPosition()); Dont need this, position of a fly wheel is irrelevant
+    SmartDashboard.putNumber("Launcher Velocity", getVelocity());
   }
 }
