@@ -66,13 +66,6 @@ public static class Intake {
   public static final int kCurrentLimit = 20;
   public static final boolean kMotorInverted = false;
   public static final IdleMode kIdleMode = IdleMode.kBrake;
-
-  /** NOTE PRESENCE GLOBAL VARIABLE */
-  public static enum notePosition {
-    None,
-    Loaded,
-    Firing
-  }
 }
 
 public static class Climb{
@@ -106,13 +99,26 @@ public static class Climb{
 
 public static class Launcher{
   // LAUNCHER MOTOR CONFIGURATION CONSTANTS
-  public static final double kSpeedPush = 0.5;
+  public static final double kSpeedPushLowRPM = 2500;
+  public static final double kSpeedPushHighRPM = 4000;
   public static final double kSpeedPull = 0.5;
-  public static final double kClosedRampRate = 0;
-  public static final double kOpenRampRate = 0;
-  public static final boolean kMotorInverted = false;
+  public static final double kSpeedPullFast = 0.8;
+  public static final double kClosedRampRate = .2;
+  public static final double kOpenRampRate = .2;
+  public static final boolean kLeftMotorInverted = false;
+  public static final boolean kRightMotorInverted = false;
   public static final IdleMode kIdleMode = IdleMode.kBrake;
   public static final int kCurrentLimit = 30;
+
+  // NOTE HANDLING AND LAUNCHING STATES FOR *GLOBAL VARIABLE*
+  public static enum noteState {
+    None,
+    Loading,
+    Loaded,
+    FiringLow,
+    FiringHigh,
+    Override
+  }
 
   // LAUNCHER EXTERNALS CONFIGURATION CONSTANTS
   public static final int kLauncherServoid = 41;

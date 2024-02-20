@@ -7,7 +7,9 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -16,15 +18,17 @@ public class Launcher extends SubsystemBase {
   
 private final CANSparkMax m_LauncherMotorLeft = new CANSparkMax(Constants.MotorIDs.kLLauncherMotorCANid, MotorType.kBrushless);
 private final CANSparkMax m_LauncherMotorRight = new CANSparkMax(Constants.MotorIDs.kRLauncherMotorCANid, MotorType.kBrushless);
-private final Servo m_LauncherServo = new Servo(Constants.Launcher.kLauncherServoid);   // !! This is probably wrong !!
-// private final ProxSensor m_LauncherFullSensor = new ProxSensor(Constants.Launcher.kLauncherSensorid);  // !! Don't know prox sensor class name !!
+
+/* The servo is really just a electro actuator. Need to find a way to give it 12V
+ * Most likely from the switchable port on the PDH using a 5 to 10 amp fuse. */
+// private final Servo m_LauncherServo = new Servo(Constants.Launcher.kLauncherServoid);
+private final PowerDistribution m_powerHub = new PowerDistribution(0, ModuleType.kRev); // PROBABLY PUT THIS IN THE hANDLER SUBSYSTEM
 
   public Launcher() {
     /*
     *     LAUNCHER MOTORS CONFIGURATION
     * All the following configuration parameters can be set in the Constants file.
     */
-
     m_LauncherMotorLeft.restoreFactoryDefaults();
     m_LauncherMotorRight.restoreFactoryDefaults();
     
@@ -32,7 +36,6 @@ private final Servo m_LauncherServo = new Servo(Constants.Launcher.kLauncherServ
     * Time in seconds that it would take the controller to go from zero
     * to full throttle.
     */
-
     m_LauncherMotorLeft.setOpenLoopRampRate(Constants.Launcher.kOpenRampRate); // Zero to Full Throttle
     m_LauncherMotorLeft.setClosedLoopRampRate(Constants.Launcher.kClosedRampRate); // Zero to Full Throttle
     m_LauncherMotorRight.setOpenLoopRampRate(Constants.Launcher.kOpenRampRate); // Zero to Full Throttle
@@ -63,48 +66,52 @@ private final Servo m_LauncherServo = new Servo(Constants.Launcher.kLauncherServ
     m_LauncherMotorRight.burnFlash();
   }
 
-  // Functions
-
+  /**
+   * Stop motors from moving
+   */
   public final void Stop() {
     // Stop motors from running
     m_LauncherMotorLeft.stopMotor();
     m_LauncherMotorRight.stopMotor();
   }
 
-  public final void Launch() {
-    /* Reverse to ensure note is not in contact with launch mechanism
-    * Spin forward to build speed (1s)
-    * Activate solenoid to push note into launch mechanism 
-    */
-
-    m_LauncherMotorLeft.set(-Constants.Launcher.kSpeedPull);
-    m_LauncherMotorRight.set(-Constants.Launcher.kSpeedPull);
-    
-    // Add delay
-    m_LauncherMotorLeft.set(Constants.Launcher.kSpeedPush);
-    m_LauncherMotorRight.set(Constants.Launcher.kSpeedPush);
-    // Add delay
-
-    m_LauncherServo.set(Constants.Launcher.kServoOn);
-    // Add delay (?, does the servo need a moment before we unpower it?)
-    m_LauncherServo.set(Constants.Launcher.kServoOff);
-  }
-
   public final void Retract() {
-    // Unsure about intended usage
+    // Unsure about intended usage???
   }
 
   public final void Extend() {
-    // Unsure about intended usage
+    // Unsure about intended usage???
   }
 
-  public final void Load() {
-    // Reverse motors to pull note into holder
-
-    // if not ReadProxSensor():     // !! Don't know real implementation (Idea is to check if there is already a note loaded first) !!
-    m_LauncherMotorLeft.set(-Constants.Launcher.kSpeedPull);
-    m_LauncherMotorRight.set(-Constants.Launcher.kSpeedPull);
+  /**
+   * Load the note into the handler.
+   * This is to pick the notes up from the floor or if we are good
+   * at it, from the human player station!
+   * Whether or not the intake will move is dependent on the state of
+   * the note prox sensor which can be fed through the function as a
+   * parameter or overrided in the command call if needed (note is stuck).
+   * When launching the note we want to perform the same
+   */
+  public final void Load(double speed) {
+    m_LauncherMotorLeft.set(-Constants.Launcher.kSpeedPushLowRPM);
+    m_LauncherMotorRight.set(-Constants.Launcher.kSpeedPushLowRPM);
   }
+
+  /*
+   * Launch the note. Launching is considered the wheels spinning in
+   * such a way that the note is ejected from the robot. Left wheel
+   * spinning CCW and right wheel spinning CW. The speed of the wheels
+   * 
+   * The delays and solenoid energizing will occur as part of the
+   * command to launch the note and not part of the launch function.
+   */
+  public final void Launch() {
+    m_LauncherMotorLeft.set(Constants.Launcher.kSpeedPush);
+    m_LauncherMotorRight.set(Constants.Launcher.kSpeedPush);
+  }
+
+
+
 
   public final double GetSpeed() {
     // Return current speed of motors
