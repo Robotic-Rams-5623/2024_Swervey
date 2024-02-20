@@ -57,8 +57,8 @@ public class Launcher extends SubsystemBase {
      * Giving the motor a + command should result in green lights flashing
      * on the motor controller. Set the inversion to whatever gets you that.
      */
-    m_LauncherMotorLeft.setInverted(Constants.Launcher.kMotorInverted);
-    m_LauncherMotorRight.setInverted(Constants.Launcher.kMotorInverted);
+    m_LauncherMotorLeft.setInverted(Constants.Launcher.kLeftMotorInverted);
+    m_LauncherMotorRight.setInverted(Constants.Launcher.kRightMotorInverted);
     
     /*    Current limit
      * NEO Brushless Motor has a low internal resistance, which can mean
@@ -85,11 +85,11 @@ public class Launcher extends SubsystemBase {
     m_EncoderLeft = m_LauncherMotorLeft.getEncoder();
     m_EncoderRight = m_LauncherMotorRight.getEncoder();
 
-    m_EncoderLeft.setInverted(Constants.Launcher.kEncoderLeftInverted);
-    m_EncoderRight.setInverted(Constants.Launcher.kEncoderRightInverted);
+    m_EncoderLeft.setInverted(Constants.Launcher.kEncLeftInverted);
+    m_EncoderRight.setInverted(Constants.Launcher.kEncRightInverted);
 
-    m_EncoderLeft.setVelocityConversionFactor(Constants.Launcher.kEncoderVelConversion);
-    m_EncoderRight.setVelocityConversionFactor(Constants.Launcher.kEncoderVelConversion);
+    m_EncoderLeft.setVelocityConversionFactor(Constants.Launcher.kEncVelConversion);
+    m_EncoderRight.setVelocityConversionFactor(Constants.Launcher.kEncVelConversion);
 
     // Don't really care about position because the launcher only monitors/controls velocity
     m_EncoderLeft.setPosition(0.0);
