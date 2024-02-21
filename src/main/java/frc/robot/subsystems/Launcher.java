@@ -12,6 +12,7 @@ import com.revrobotics.SparkPIDController;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -176,7 +177,7 @@ public class Launcher extends SubsystemBase {
    * @param speed of the motor in RPM to set the setpoint of the PID controller to.
    */
   public final void setLaunchRPM (double speed) {
-    m_LauncherMotorLeft.setReference(speed, CANSparkMax.ControlType.kVelocity); // Right motor follows left's lead
+    m_LauncherPIDController.setReference(speed, CANSparkMax.ControlType.kVelocity); // Right motor follows left's lead
     // m_LauncherMotorRight.setReference(speed, CANSparkMax.ControlType.kVelocity);
   }
 
@@ -247,10 +248,10 @@ public class Launcher extends SubsystemBase {
     // This method will be called once per scheduler run
 
     /* SMART DASHBOARD */
-    SmartDashboard.putNumber("Launcher Motor Temp (F)", (m_ClimbMotor.getMotorTemperature() * 9 / 5) + 32); // Default is C, Convert to F
-    SmartDashboard.putNumber("Launcher Motor Current", m_ClimbMotor.getOutputCurrent());
-    SmartDashboard.putNumber("Launcher Motor Input Voltage", m_ClimbMotor.getBusVoltage());
-    SmartDashboard.putNumber("Launcher Motor Duty Cycle", m_ClimbMotor.getAppliedOutput());
+    SmartDashboard.putNumber("Launcher Motor Temp (F)", (m_LauncherMotorLeft.getMotorTemperature() * 9 / 5) + 32); // Default is C, Convert to F
+    SmartDashboard.putNumber("Launcher Motor Current", m_LauncherMotorLeft.getOutputCurrent());
+    SmartDashboard.putNumber("Launcher Motor Input Voltage", m_LauncherMotorLeft.getBusVoltage());
+    SmartDashboard.putNumber("Launcher Motor Duty Cycle", m_LauncherMotorLeft.getAppliedOutput());
     // SmartDashboard.putNumber("Launcher Position", getPosition()); Dont need this, position of a fly wheel is irrelevant
     SmartDashboard.putNumber("Launcher Velocity", getVelocity());
   }

@@ -54,8 +54,8 @@ public class Climb extends SubsystemBase {
      */
     m_ClimbEncoder = m_ClimbMotor.getEncoder();
     m_ClimbEncoder.setInverted(Constants.Climb.kEncInverted);
-    m_ClimbEncoder.setPositionConversionFactor(Constants.Climb.kPositionConversion); // Inches
-    m_ClimbEncoder.setVelocityConversionFactor(Constants.Climb.kVelocityConversion); // Inches/Sec
+    m_ClimbEncoder.setPositionConversionFactor(Constants.Climb.kEncPosConversion); // Inches
+    m_ClimbEncoder.setVelocityConversionFactor(Constants.Climb.kEncVelConversion); // Inches/Sec
     m_ClimbEncoder.setPosition(Constants.Climb.kResetPosition);
 
     /* 
