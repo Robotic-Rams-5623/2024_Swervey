@@ -1,6 +1,13 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -57,7 +64,7 @@ public class Handler extends SubsystemBase {
     m_TiltMotor.setOpenLoopRampRate(Constants.Handler.kOpenRampRate); // Zero to Full Throttle
     m_TiltMotor.setClosedLoopRampRate(Constants.Handler.kClosedRampRate); // Zero to Full Throttle
     m_TiltMotor.setIdleMode(Constants.Handler.kIdleMode); // Brake or Coast
-    m_TiltMotor.setInverted(Constants.Handler.kLeftMotorInverted);
+    m_TiltMotor.setInverted(Constants.Handler.kMotorInverted);
     m_TiltMotor.setSmartCurrentLimit(Constants.Handler.kCurrentLimit); // 30 Amp Limit (40 Amp Breaker)
 
     m_TiltMotor.burnFlash();
