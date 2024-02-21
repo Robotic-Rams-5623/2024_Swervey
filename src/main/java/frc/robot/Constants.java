@@ -63,6 +63,9 @@ public static class Handler {
 
   public static final double kTiltMaxRange = 100; // What is the angle at 5 volts of the pot
   public static final double kTiltZeroAngle = 100; // What is the angle at 0 volts of the pot
+
+  public static final double kUpSpeed = 0.4;
+  public static final double kDownSpeed = 0.3;
   
   // public static final double kSpeedIn = 0.3; // Percent Output
   // public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)
@@ -83,6 +86,9 @@ public static class Handler {
   public static final double kMaxOutput = 0.6; // Percent Output to Raise the Mechanism
   public static final double kMinOutput = -0.3; // Negative Percent Output to Lower Mechanism
   public static final double kMaxRPM = 3000; // Max RPM in Closed Loop Mode
+
+  public static final double kStatic = 0.1; // Static Feedforward gain
+  public static final double kVel = 0.01; // Velocity feedforward gain
 }
 
 

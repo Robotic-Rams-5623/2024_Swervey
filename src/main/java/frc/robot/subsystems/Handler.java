@@ -1,19 +1,25 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import frc.robot.Constants;
 
-public class Handler extends SubsystemBase {
+public class Handler extends PIDSubsystem {
   /* Create the motor for tilting the handling mechanism */
-  private CANSparkMax m_TiltMotor = new CANSparkMax(Constants.MotorIDs.kTiltMotorCANid, MotorType.kBrushless);
+  private final CANSparkMax m_TiltMotor = new CANSparkMax(Constants.MotorIDs.kTiltMotorCANid, MotorType.kBrushless);
 
   /* Angle Sensor Object
    * THe angle of the tilting mechanish will be read from a potentiometer rather than
@@ -21,9 +27,9 @@ public class Handler extends SubsystemBase {
    * a more reliable reading of the angle since the WPILIB library for potentiometers
    * include setting the angle range of the input directly in the object creation.
    */
-  AnalogInput m_PotAI;
-  AnalogPotentiometer m_TiltAngle;
-  
+  private final AnalogInput m_PotAI;
+  private final AnalogPotentiometer m_TiltAngle;
+
   /* Solenoid Object
    * Since the solenoid we are using to feed the note into the launch wheels is a 12V
    * solneoid and we don't want to over complicate the circuitry with a relay controlled
@@ -31,21 +37,21 @@ public class Handler extends SubsystemBase {
    * 
    * IMPORTANT: REV ROBOTICS POWER ISTRIBUTION HUB (PDH) NEEDS TO HAVE CAN ID OF 1
    */
-  private PowerDistribution m_PDH = new PowerDistribution(1, ModuleType.kRev);
-  
-  /* Create the sensors used for note sensing */
-  private DigitalInput m_NoteProx = new DigitalInput(Constants.Handler.kHandlerProxDIport);
+  private final PowerDistribution m_PDH = new PowerDistribution(1, ModuleType.kRev);
 
-  /* PID Controller */
-  // THIS SUBSYSTEM IS GOING TO BE CONVERTED TO A PID SUBSYSTEM IN ORDER TO BETTER CONTROL
-  // THE ANGLE OF THE TILTING MECHANISM IN A WAY THAT IS EASIEST WITH COMMANDS.
-  // private PIDController
-  
+  /* Create the sensors used for note sensing */
+  private final DigitalInput m_NoteProx = new DigitalInput(Constants.Handler.kHandlerProxDIport);
+
+  /* Simple motor feed forward controll to help counteract gravity */
+  private final SimpleMotorFeedforward m_tiltFeedForward = new SimpleMotorFeedforward(Constants.Handler.kStatic, Constants.Handler.kVel);
+
 
   public Handler() {
-    /** 
-     * Do all the configuration stuff for the above objects and the subsystem.
-     */
+    super(
+        // The PIDController used by the subsystem
+        new PIDController(Constants.Handler.kP, Constants.Handler.kI, Constants.Handler.kD));
+    getController().setTolerance(5.0); // In Degrees
+
     /* Configure the potentiometer for angle measurement of the tilt mechanism */
     m_PotAI = new AnalogInput(Constants.Handler.kTiltPotAIport);
     m_PotAI.setAverageBits(2);
@@ -70,7 +76,25 @@ public class Handler extends SubsystemBase {
     m_TiltMotor.burnFlash();
   }
 
+  /** 
+   * NEXT FEW FUNCTIONS ARE FOR THE PID SUBSYSTEM
+   */
+  @Override
+  public void useOutput(double output, double setpoint) {
+    m_TiltMotor.set(output);
+    // May need to add a feedforward to counteract gravity
+  }
 
+  @Override
+  public double getMeasurement() {
+    return getPotAngle();
+  }
+
+
+
+  /**
+   * REMAINING FUNCTIONS THAT ARENT DIRECTLY ASSOCIATED WITH THE PID
+   */
 
   /**
    *  ENERGIZE THE FEED SOLENOID
@@ -81,8 +105,6 @@ public class Handler extends SubsystemBase {
     m_PDH.setSwitchableChannel(true);
   }
 
-
-  
   /**
    * DE_ENERGIZE THE FEED SOLENOID
    * De-energizing the feed solenoid by disabling the switchable port on the PDH
@@ -92,8 +114,6 @@ public class Handler extends SubsystemBase {
     m_PDH.setSwitchableChannel(false);
   }
 
-
-  
   /**
    * GET THE ANALOG INPUT POTENTIOMETER VOLTAGE
    * @return voltage of potentiometer in volts
@@ -101,8 +121,6 @@ public class Handler extends SubsystemBase {
   public double getPotVoltage() {
     return m_PotAI.getVoltage();
   }
-
-
 
   /**
    * GET THE ANALOG INPUT POTENTIOMETER ANGLE
@@ -112,8 +130,30 @@ public class Handler extends SubsystemBase {
     return m_TiltAngle.get();
   }
 
+  /**
+   * MANUALLY MOVE THE TILT UPWARDS
+   * 
+   */
+  public void manualUp() {
+    m_TiltMotor.set(Constants.Handler.kUpSpeed);
+  }
 
-  
+  /**
+   * MANUALLY MOVE THE TILT DOWNWARDS
+   * 
+   */
+  public void manualDown() {
+    m_TiltMotor.set(-Constants.Handler.kDownSpeed); // Needs to be negative
+  }
+
+  /**
+   * STOP ALL MOTOR OUTPUT
+   * 
+   */
+  public void stop() {
+    m_TiltMotor.stopMotor();
+  }
+
   @Override
   public void periodic() {
     // Slap some smartdashboard stuff in here

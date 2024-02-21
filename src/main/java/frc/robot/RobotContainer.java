@@ -8,6 +8,8 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.teleopDrive;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Handler;
+import frc.robot.subsystems.Launcher;
 import frc.robot.subsystems.SwerveDriveBase;
 import frc.robot.subsystems.Climb;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -25,7 +27,10 @@ public class RobotContainer {
    */
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final SwerveDriveBase m_drive = new SwerveDriveBase();
-  // private final Climb m_climb = new Climb();
+  private final Climb m_climb = new Climb();
+  private final Handler m_tilt = new Handler();
+  private final Launcher m_launch = new Launcher();
+
 
   /**
    * SET DRIVER CONTROLLER OBJECTS
@@ -110,8 +115,35 @@ public class RobotContainer {
     
 
 
-    /* CONTROLLER COMMAND */
-    // END CONTROLLER COMMAND
+    /* FEED NOTE INTO LAUNCHER */
+    m_actionController.a().onTrue( // 
+      new StartEndCommand(
+        m_tilt::feedExtend, 
+        m_tilt::feedRetract,
+        m_tilt
+    ));
+    // END FEED NOTE COMMAND
+
+
+
+    /* TILT HANDLER MECHANISM UPWARDS */
+    m_actionController.leftBumper().onTrue(
+      new StartEndCommand(
+        m_tilt::manualUp, 
+        m_tilt::stop, 
+        m_tilt
+    ));
+    // END TILT UP COMMAND
+
+    /* TILT HANDLER MECHANISM DOWNWARDS */
+    m_actionController.rightBumper().onTrue(
+      new StartEndCommand(
+        m_tilt::manualDown, 
+        m_tilt::stop, 
+        m_tilt
+    ));
+    // END TILT DOWN COMMAND
+
 
     /* CONTROLLER COMMAND */
     // END CONTROLLER COMMAND
