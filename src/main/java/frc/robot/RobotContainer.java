@@ -124,6 +124,13 @@ public class RobotContainer {
     ));
     // END FEED NOTE COMMAND
 
+    /* LAUNCH NOTE MANUAL */
+    m_actionController.x().onTrue(
+      new StartEndCommand(
+        () -> m_launch.launch(0.7), 
+        m_launch::stop,
+        m_launch
+    ));
 
 
     /* TILT HANDLER MECHANISM UPWARDS */
