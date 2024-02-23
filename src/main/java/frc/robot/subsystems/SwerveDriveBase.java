@@ -170,7 +170,7 @@ public class SwerveDriveBase extends SubsystemBase {
       
       for (SwerveModule mod : m_swerveModules) {
         SmartDashboard.putNumber(
-          mod.modName + " CANcoder", mod.getCANcoderAngle().getDegrees());
+          mod.modName + " CANcoder", mod.getCANcoderAngle());
         SmartDashboard.putNumber(
           mod.modName + " Turn", mod.getWheelAngle().getDegrees());
         SmartDashboard.putNumber(
