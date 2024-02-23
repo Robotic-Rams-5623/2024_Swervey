@@ -437,4 +437,7 @@ public class SwerveModule {
         m_driveMotor.set(0);
         m_turnMotor.set(0);
     }
+
+    public double getRawEncoder() {
+        return m_turnCANcoder.getAbsolutePosition().getValueAsDouble();
 }
