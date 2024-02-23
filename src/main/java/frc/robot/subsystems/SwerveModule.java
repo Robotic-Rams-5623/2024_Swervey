@@ -311,7 +311,7 @@ public class SwerveModule {
      * @return angle of wheel in degrees from [0 to 360)
      */
     public double getAngleDegrees() {
-        return Math.toDegrees(getCANcoderAngle().getRadians());
+        return Math.toDegrees(getCANcoderAngle() * 2 * Math.PI());
     }
 
     /**
@@ -440,4 +440,5 @@ public class SwerveModule {
 
     public double getRawEncoder() {
         return m_turnCANcoder.getAbsolutePosition().getValueAsDouble();
+    }
 }
