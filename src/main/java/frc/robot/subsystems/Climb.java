@@ -53,7 +53,7 @@ public class Climb extends SubsystemBase {
      * CLIMB ENCODER CONFIGURATION
      */
     m_ClimbEncoder = m_ClimbMotor.getEncoder();
-    m_ClimbEncoder.setInverted(Constants.Climb.kEncInverted);
+    // m_ClimbEncoder.setInverted(Constants.Climb.kEncInverted);
     m_ClimbEncoder.setPositionConversionFactor(Constants.Climb.kEncPosConversion); // Inches
     m_ClimbEncoder.setVelocityConversionFactor(Constants.Climb.kEncVelConversion); // Inches/Sec
     m_ClimbEncoder.setPosition(Constants.Climb.kResetPosition);
@@ -71,6 +71,7 @@ public class Climb extends SubsystemBase {
     kIz = Constants.Climb.kIz;
     kFF = Constants.Climb.kFF;
 
+    m_ClimbPIDController = m_ClimbMotor.getPIDController();
     m_ClimbPIDController.setP(kP);
     m_ClimbPIDController.setI(kI);
     m_ClimbPIDController.setD(kD);
@@ -78,6 +79,7 @@ public class Climb extends SubsystemBase {
     m_ClimbPIDController.setIAccum(0);
     m_ClimbPIDController.setFF(kFF);
     m_ClimbPIDController.setOutputRange(Constants.Climb.kMinOutput,Constants.Climb.kMaxOutput);
+    m_ClimbPIDController.setFeedbackDevice(m_ClimbEncoder);
 
     SmartDashboard.putNumber("Climb kP", kP);
     SmartDashboard.putNumber("Climb kI", kI);
@@ -115,7 +117,7 @@ public class Climb extends SubsystemBase {
    * motor in what ever idle mode is set in the configurations.
    */
   public final void Stop() {
-    m_ClimbMotor.stopMotor();
+    m_ClimbMotor.set(0.0);
   }
 
   /**
@@ -187,7 +189,7 @@ public class Climb extends SubsystemBase {
 
     m_ClimbPIDController.setIAccum(0);
 
-    // Need to do this to update
+    //Need to do this to update
     m_ClimbMotor.burnFlash();
   }
 

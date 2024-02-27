@@ -97,15 +97,16 @@ public static class Handler {
   
 public static class Climb{
   /** CLIMB SUBSYSTEM PARAMETERS */
-  public static final double kSpeedUp = 0.5; // Percent Output
-  public static final double kSpeedDown = 0.5; // Percent Output
-  public static final double kResetPosition = 0; // Zero for relative to robot or offset to be relative to floor
+  public static final double kSpeedUp = 0.6; // Percent Output
+  public static final double kSpeedDown = 0.4; // Percent Output
+  public static final double kResetPosition =11; // Zero for relative to robot or offset to be relative to floor
+  // Reset position is like 11 inches from the bottom of the frame to the center of the bottom hook.
 
   /** CLIMB MOTOR CONFIGURATION CONSTANTS */
   public static final double kClosedRampRate = 2;
   public static final double kOpenRampRate = 2;
   public static final int kCurrentLimit = 30;
-  public static final boolean kMotorInverted = false;
+  public static final boolean kMotorInverted = true;
   public static final IdleMode kIdleMode = IdleMode.kBrake;
 
   /** CLIMB ENCODER CONFIGURATION CONSTANTS */

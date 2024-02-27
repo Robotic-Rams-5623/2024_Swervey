@@ -15,6 +15,7 @@ import frc.robot.subsystems.Climb;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -27,10 +28,9 @@ public class RobotContainer {
    */
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final SwerveDriveBase m_drive = new SwerveDriveBase();
-  // private final Climb m_climb = new Climb();
+  private final Climb m_climb = new Climb();
   // private final Handler m_tilt = new Handler();
   // private final Launcher m_launch = new Launcher();
-
 
   /**
    * SET DRIVER CONTROLLER OBJECTS
@@ -89,23 +89,27 @@ public class RobotContainer {
      * ACTION CONTROLLER BINDINGS
      */
     
-    // /* RUN CLIMBER UPWARDS */
-    // m_actionController.povUp().onTrue( // UP
-    //   new StartEndCommand(
-    //     m_climb::Up,
-    //     m_climb::Stop,
-    //     m_climb
-    // ));
-    // // END CLIMBER UPWARDS
+    /* RUN CLIMBER UPWARDS */
+    m_actionController.povCenter().onTrue(
+      new InstantCommand(
+        m_climb::Stop,
+        m_climb
+      ));
+
+    m_actionController.povUp().onTrue( // UP
+      new InstantCommand(
+        m_climb::Up,
+        m_climb
+    ));
+    // END CLIMBER UPWARDS
 
     // /* RUN CLIMBER DOWNWARDS */
-    // m_actionController.povDown().onTrue( // DOWN
-    //   new StartEndCommand(
-    //     m_climb::Down,
-    //     m_climb::Stop,
-    //     m_climb
-    // ));
-    // // END CLIMBER DOWNWARDS
+    m_actionController.povDown().onTrue( // DOWN
+      new InstantCommand(
+        m_climb::Down,
+        m_climb
+    ));
+    // END CLIMBER DOWNWARDS
     
 
 
