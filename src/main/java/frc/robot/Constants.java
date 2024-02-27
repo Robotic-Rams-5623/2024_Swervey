@@ -172,29 +172,35 @@ public static class Swerve {
   /*
    *  {Need a pretty ascii image to describe angle offset directions}
    */
-  public static final double kFrontLeftAngleOffset = 0; // 0 Degrees
-  public static final double kFrontRightAngleOffset = -Math.PI; // 90 degrees
-  public static final double kBackLeftAngleOffset = Math.PI; // 270 degrees
-  public static final double kBackRightAngleOffset = 0; // 0 degrees
+
+  // Set up robot so that the wheel bevel gears are all facing left and are straight as possible!
+  // Replace the 0.0 inside the -Math.toRadians() with the recorded value.
+  // Wheels spinning in the incorrect direction should get a +180deg (or PI) added to the offset.
+  public static final double kFrontLeftAngleOffset = -Math.toRadians(0.0); // 0 Degrees
+  public static final double kFrontRightAngleOffset = -Math.toRadians(0.0); // 90 degrees
+  public static final double kBackLeftAngleOffset = -Math.toRadians(0.0); // 270 degrees
+  public static final double kBackRightAngleOffset = -Math.toRadians(0.0); // 0 degrees
+  
   // Distance between the centers of the left and right wheel in the robot
   public static final double kWheelBase = Units.inchesToMeters(22.0);
   // Distance between the centers of the front and back wheels on the robot
   public static final double kTrackWidth = Units.inchesToMeters(24.25);
   // The combination of the above into the kinematic positions of the wheels
   public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-    new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-    new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-    new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
+    new Translation2d(kWheelBase / 2, kTrackWidth / 2), // FL
+    new Translation2d(kWheelBase / 2, -kTrackWidth / 2), // FR
+    new Translation2d(-kWheelBase / 2, kTrackWidth / 2), // RL
+    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)); // RR
 
   /** SPEED LIMIT CONSTANTS */
-  public static final double kMaxDriveMeterPerSec = 0.5; // 2.0 meters/sec = 6.56 ft/sec
-  public static final double kMaxTurnRadianPerSec = Math.PI / 4; // 2pi/sec = 360 deg/sec!
-  public static final double kMaxTurnAccelerationRadiansPerSecSquared = Math.PI * 2;
+  public static final double kMaxDriveMeterPerSec = 2.0; // 2.0 meters/sec = 6.56 ft/sec
+  public static final double kMaxTurnRadianPerSec = Math.PI * 2; // 2pi/sec = 360 deg/sec!
+  public static final double kMaxTurnAccelerationRadiansPerSecSquared = Math.PI * 1.5;
+  public static final double kRotTransFactor = 0.045;
   
   /** SLEW RATE CONSTANT VALUES */
-  public static final double kMagnitudeSlewRate = 0.0;
-  public static final double kRotationSlewRate = 0.0;
+  public static final double kTransSlewRate = 14.0;
+  public static final double kRotSlewRate = 16.0;
   
   /** GYROMETER CONSTANTS */
   public static final boolean kGyroInversed = false;
@@ -206,7 +212,7 @@ public static class SwerveModule {
   /** TURN ENCODER INVERSION */
   // Invert the turning encoder, since the output shaft rotates in the opposite direction of
   // the steering motor
-  public static final boolean kTurnEncoderInverted = true;
+  public static final boolean kTurnEncoderInverted = false;
 
   /** POSITION AND VERLOCITY CONSTANTS AND MATH */
   // Wheel dimensions
@@ -219,42 +225,42 @@ public static class SwerveModule {
   public static final double kDriveMotorFreeSpeedRps = MotorParams.kFreeSpeedRPMVortex / 60; // rev/sec
   public static final double kDriveWheelFreeSpeedRps = (kDriveMotorFreeSpeedRps * kWheelCircumferenceMeters) / kDriveMotorReduction; // rev/sec
   // Drive encoder position/velocity conversion factors
-  public static final double kDriveEncoderPositionFactor = (kWheelDiameterMeters * Math.PI) / kDriveMotorReduction; // meters
-  public static final double kDriveEncoderVelocityFactor = ((kWheelDiameterMeters * Math.PI) / kDriveMotorReduction) / 60.0; // meters per second
+  public static final double kDriveEncoderPositionFactor = (1.0 / kDriveMotorReduction) * kWheelCircumferenceMeters; // meters
+  public static final double kDriveEncoderVelocityFactor = kTurnEncoderPositionFactor / 60.0; // meters per second
 
   // Turn encoder position/velocity conversion factors
-  public static final double kTurnEncoderPositionFactor = (2 * Math.PI); // radians
-  public static final double kTurnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // radians per second
+  public static final double kTurnEncoderPositionFactor = 1.0 / (kDriveMotorReduction) * 2 * Math.PI; // radians
+  public static final double kTurnEncoderVelocityFactor = kTurnEncoderPositionFactor / 60.0; // radians per second
   // Turn encoder PID input limits, basically just the limits of a circle (zero to 2 pi)
-  public static final double kTurnEncoderPositionPIDMinInput = 0; // radians
-  public static final double kTurnEncoderPositionPIDMaxInput = kTurnEncoderPositionFactor; // radians
+  public static final double kTurnEncoderPositionPIDMinInput = 0; // radians  // NOT IMPORTANT
+  public static final double kTurnEncoderPositionPIDMaxInput = kTurnEncoderPositionFactor; // radians  // NOT IMPORTANT
 
   /** DRIVE AND TURN PID GAINS AND CONSTANTS */
-  public static final double kDriveP = 0.04;
-  public static final double kDriveI = 0;
-  public static final double kDriveD = 0;
-  public static final double kDriveFF = 1 / kDriveWheelFreeSpeedRps;
-  public static final double kDriveMinOutput = -1;
-  public static final double kDriveMaxOutput = 1;
-  public static final double kDriveS = 0.667;
-  public static final double kDriveV = 2.44;
+  public static final double kDriveP = 0.15;
+  public static final double kDriveI = 0; // NOT IMPORTANT
+  public static final double kDriveD = 0; // NOT IMPORTANT
+  public static final double kDriveFF = 1 / kDriveWheelFreeSpeedRps; // NOT IMPORTANT
+  public static final double kDriveMinOutput = -0.9; // NOT IMPORTANT
+  public static final double kDriveMaxOutput = 0.9; // NOT IMPORTANT
+  public static final double kDriveS = 0.01;
+  public static final double kDriveV = 1.0 / (MotorParams.kFreeSpeedRPMVortex * kDriveEncoderVelocityFactor);
 
-  public static final double kTurnP = 0.04;
-  public static final double kTurnI = 0;
-  public static final double kTurnD = 0;
-  public static final double kTurnFF = 0;
-  public static final double kTurnMinOutput = -1;
-  public static final double kTurnMaxOutput = 1;
+  public static final double kTurnP = 3.0;
+  public static final double kTurnI = 0; // NOT IMPORTANT
+  public static final double kTurnD = 0; // NOT IMPORTANT
+  public static final double kTurnFF = 0; // NOT IMPORTANT
+  public static final double kTurnMinOutput = -0.8; // NOT IMPORTANT
+  public static final double kTurnMaxOutput = 0.8; // NOT IMPORTANT
 
   /** ADDITIONAL MOTOR SETTINGS THAT ARE THE SAME TO EACH MODULE */
   // Brake mode for these motors or we will get funky control issues
   public static final IdleMode kDriveMotorIdleMode = IdleMode.kBrake;
   public static final IdleMode kTurnMotorIdleMode = IdleMode.kBrake;
   // Limit current to that of the brakers for now, maybe lower if we blow any
-  public static final int kDriveMotorCurrentLimit = 40; // amps
-  public static final int kTurnMotorCurrentLimit = 40; // amps
+  public static final int kDriveMotorCurrentLimit = 50; // amps
+  public static final int kTurnMotorCurrentLimit = 30; // amps
 
-  public static final double kSpeedDeadband = 0.05;
+  public static final double kSpeedDeadband = 0.05; // NOT IMPORTANT
   }
 
 
