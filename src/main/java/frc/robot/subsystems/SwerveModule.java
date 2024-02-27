@@ -7,6 +7,7 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
@@ -52,33 +53,8 @@ public class SwerveModule {
      * you haver to do a work around were you set the position of the turn
      * angle to the position of the cancoder constantly.
      */
-    // private SparkPIDController m_drivePIDControl;
-    // private SparkPIDController m_turnPIDControl;
-
-    /* Create the PID controller for the drive motor control */
-    private PIDController m_drivePIDController = new PIDController(
-        Constants.SwerveModule.kDriveP, 
-        Constants.SwerveModule.kDriveI, 
-        Constants.SwerveModule.kDriveD
-    );
-
-    /* Create a simplified PID controller for the turn motor control */
-    private PIDController m_turnPIDControllerSimple = new PIDController(
-        Constants.SwerveModule.kTurnP, 
-        Constants.SwerveModule.kTurnI, 
-        Constants.SwerveModule.kTurnD
-    );
-
-    /* Create a bit more complicated PID controller for the turn motor control */
-    private ProfiledPIDController m_turnPIDController = new ProfiledPIDController(
-        Constants.SwerveModule.kTurnP,
-        Constants.SwerveModule.kTurnI,
-        Constants.SwerveModule.kTurnD,
-        new TrapezoidProfile.Constraints(
-            Constants.Swerve.kMaxTurnRadianPerSec,
-            Constants.Swerve.kMaxTurnAccelerationRadiansPerSecSquared
-        )
-    );
+    private SparkPIDController m_drivePIDController;
+    private SparkPIDController m_turnPIDController;
 
     /* Feedforward Controller for the Drive Motor on the module */
     private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(
@@ -150,13 +126,16 @@ public class SwerveModule {
         m_driveEncoder.setVelocityConversionFactor(Constants.SwerveModule.kDriveEncoderVelocityFactor);
         m_driveEncoder.setPosition(0.0);
         
+        m_drivePIDController = m_driveMotor.getPIDController();
         m_drivePIDController.setP(Constants.SwerveModule.kDriveP);
-        m_drivePIDController.setI(Constants.SwerveModule.kDriveI);
-        m_drivePIDController.setD(Constants.SwerveModule.kDriveD);
+        // m_drivePIDController.setI(Constants.SwerveModule.kDriveI);
+        // m_drivePIDController.setD(Constants.SwerveModule.kDriveD);
         // m_drivePIDController.setFF(Constants.SwerveModule.kDriveFF);
         
         /* Burn the configurations to the flash memory of the motor */
         m_driveMotor.burnFlash();
+
+
 
         /* Create and configure the turn motor and related objects */
         m_turnMotor = new CANSparkFlex(turnCANid, MotorType.kBrushless);
@@ -169,6 +148,8 @@ public class SwerveModule {
         m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 500);
         m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
         m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500);       
+
+
 
         /* Setting up the CANcoder is a bit messy. The way that the Phoenix library is set up
          * doesn't really make sense. Why would I need to call a get function to set something? */
@@ -189,84 +170,15 @@ public class SwerveModule {
          * wheels are facing.
         */
         m_turnEncoder = m_turnMotor.getEncoder();
-        m_turnEncoder.setPositionConversionFactor(Constants.SwerveModule.kTurnEncoderPositionFactor);
+        m_turnEncoder.setPositionConversionFactor(Constants.SwerveModule.kDriveEncoderPositionFactor);
+        m_turnEncoder.setVelocityConversionFactor(Constants.SwerveModule.kDriveEncoderVelocityFactor);
+        m_turnEncoder.setMeasurementPeriod(16);
+        m_turnEncoder.setAverageDepth(4);
         
-        m_turnPIDController.setPID(
-            Constants.SwerveModule.kTurnP, 
-            Constants.SwerveModule.kTurnI,
-            Constants.SwerveModule.kTurnD);
-        m_turnPIDController.enableContinuousInput(0, 2*Math.PI); // zero to 360 and loops around
-        m_turnPIDControllerSimple.enableContinuousInput(0, 2*Math.PI);
+        m_turnPIDController = m_turnMotor.getPIDController();
+        m_turnPIDController.setP(Constants.SwerveModule.kTurnP);
 
         m_turnMotor.burnFlash();
-
-        //resetToAbsolute();
-
-        /* 
-         * Confgiure the PID Controllers from the motor PID controllers using the
-         * encoders as the feedback sensors
-         */
-        // m_drivePIDControl = m_driveMotor.getPIDController();
-        // m_drivePIDControl.setFeedbackDevice(m_driveEncoder);
-        // m_turnPIDControl = m_turnMotor.getPIDController();
-        // m_turnPIDControl.setFeedbackDevice(m_turnEncoder);
-
-        /* Conversion factor on the turn enocder. The values for position and velocity
-         * should be in radians and radians/second. The native WPIlib swerve API uses
-         * these units of measure for kinematic calculations.
-         */
-        // m_turnEncoder.setPositionConversionFactor(Constants.SwerveModule.kTurnEncoderPositionFactor);
-        // m_turnEncoder.setVelocityConversionFactor(Constants.SwerveModule.kTurnEncoderVelocityFactor);
-
-        /* The turning motor shaft will rotate in the oposite direction of the drive
-         * motor shaft
-         */
-        // m_turnEncoder.setInverted(Constants.SwerveModule.kTurnEncoderInverted);
-
-        /* Enable PID wrap around for the turning motor. This iwll allow the PID
-         * controller to go past zero to get to a setpoint on the otherside of it.
-         * i.e. going from 10° to 350° it can pass through 0° instead of going all
-         * the way around the opposite way. 
-         */
-        // m_turnPIDControl.setPositionPIDWrappingEnabled(true);
-        // m_turnPIDControl.setPositionPIDWrappingMinInput(Constants.SwerveModule.kTurnEncoderPositionPIDMinInput);
-        // m_turnPIDControl.setPositionPIDWrappingMaxInput(Constants.SwerveModule.kTurnEncoderPositionPIDMaxInput);
-
-        /* Set the PID gains for the controller. They will definetly need to be adjusted
-         * to avoid any unwanted behavior of the driving motors.
-         */
-        // m_drivePIDControl.setP(Constants.SwerveModule.kDriveP);
-        // m_drivePIDControl.setI(Constants.SwerveModule.kDriveI);
-        // m_drivePIDControl.setD(Constants.SwerveModule.kDriveD);
-        // m_drivePIDControl.setFF(Constants.SwerveModule.kDriveFF);
-        // m_drivePIDControl.setOutputRange(
-        //     Constants.SwerveModule.kDriveMinOutput,
-        //     Constants.SwerveModule.kDriveMaxOutput
-        // );
-
-        // m_turnPIDControl.setP(Constants.SwerveModule.kTurnP);
-        // m_turnPIDControl.setI(Constants.SwerveModule.kTurnI);
-        // m_turnPIDControl.setD(Constants.SwerveModule.kTurnD);
-        // m_turnPIDControl.setFF(Constants.SwerveModule.kTurnFF);
-        // m_turnPIDControl.setOutputRange(
-        //     Constants.SwerveModule.kTurnMinOutput,
-        //     Constants.SwerveModule.kTurnMaxOutput
-        // );
-
-        // m_driveMotor.setIdleMode(Constants.SwerveModule.kDriveMotorIdleMode);
-        // m_driveMotor.setSmartCurrentLimit(Constants.SwerveModule.kDriveMotorCurrentLimit);
-        // m_turnMotor.setIdleMode(Constants.SwerveModule.kTurnMotorIdleMode);
-        // m_turnMotor.setSmartCurrentLimit(Constants.SwerveModule.kTurnMotorCurrentLimit);
-
-
-        // m_angleOffset = angleOffset;
-        // m_desiredState.angle = new Rotation2d(m_turnEncoder.getPosition());
-        //m_desiredState.angle = new Rotation2d(m_turnCANcoder.getPosition());
-        
-        /* COMMENT THIS OUT ONCE CONSTATNS ARE SET */
-        //SmartDashboard.putNumber("Angle Offset " + Name, m_turnEncoder.getPosition());
-
-        // resetEncoders();
     }
 
 
@@ -311,7 +223,8 @@ public class SwerveModule {
      * @return angle of wheel in degrees from [0 to 360)
      */
     public double getAngleDegrees() {
-        return Math.toDegrees(getCANcoderAngle() * 2 * Math.PI());
+        double angle = getCANcoderAngle();
+        return Math.toDegrees(*2*Math.PI());
     }
 
     /**
