@@ -30,55 +30,29 @@ import frc.robot.Constants;
  * angle encoder which should be an encoder capable of an Absolute position reading.
  */
 public class SwerveModule {
-    /* The motor used for driving the wheel on the module */
     private CANSparkFlex m_driveMotor;
-
-    /* The motor used for turn the wheel on the module */
     private CANSparkFlex m_turnMotor;
-
-    /* The encoder that keeps track of driving distance */
     private RelativeEncoder m_driveEncoder;
-
-    /* The encoder that keeps track of the angle of the wheel on the module */
     private RelativeEncoder m_turnEncoder;
-    private CANcoder m_turnCANcoder; // Perferably use this one
-
-    private CANcoderConfiguration m_turnCANcoderConfig;
-
-    /**
-     * Spark Library PID Controller is great if we were using a Rev Robotics
-     * absolute encoder for measuring the wheel angle. It is very difficult
-     * to use a cancoder with the Spark PID Controller because it doesnt
-     * directly take the cancoder object as a feedback device parameter
-     * you haver to do a work around were you set the position of the turn
-     * angle to the position of the cancoder constantly.
-     */
+    private CANcoder m_absEncoder;
+    private CANcoderConfiguration m_absEncoderConfig;
     private SparkPIDController m_drivePIDController;
     private SparkPIDController m_turnPIDController;
-
-    /* Feedforward Controller for the Drive Motor on the module */
     private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(
         Constants.SwerveModule.kDriveS, 
         Constants.SwerveModule.kDriveV
     );
 
-    /* Set the PID output to zero for the drive on startup */
-    private double drivePIDControllerOutput = 0;
-    private double driveFFControllerOutput = 0;
-    private double driveMotorVel = 0;
-    private double driveMotorVelCF = 0;
-
-    /**
-     * The offset from the zero point of the CANcoder at startup needs
-     * to be added to the measurement. This value is in radians. The
-     * zero point is the when the wheel is facing parallel to the side
-     * frame with the black bolt facing the outside of the robot.
-     */
-    private double turnCANcoderOffset;
-
+    private double offset;
+    private double m_referenceAngleRadians = 0;
     public String modName;
+    // private double drivePIDControllerOutput = 0;
+    // private double driveFFControllerOutput = 0;
+    // private double driveMotorVel = 0;
+    // private double driveMotorVelCF = 0;
 
-
+    
+    
     /**
      * Initializes a new SwerveModule
      * 
@@ -105,253 +79,202 @@ public class SwerveModule {
 
         this.modName = Name;
 
-        /* Create and configure the drive motor and related objects */
+        /* DRIVE MOTOR */
         m_driveMotor = new CANSparkFlex(driveCANid, MotorType.kBrushless);
         m_driveMotor.restoreFactoryDefaults(); // Reset All Settings
         m_driveMotor.setInverted(driveMotorInvert);
         m_driveMotor.setIdleMode(IdleMode.kBrake);
         m_driveMotor.setSmartCurrentLimit(Constants.SwerveModule.kDriveMotorCurrentLimit);
-        // m_driveMotor.enableVoltageCompensation()
-        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 500);
-        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
-        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
-        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 50);
-        
+        m_driveMotor.enableVoltageCompensation(12.6)
+        // m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 500);
+        // m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
+        // m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
+        // m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 50);
+
+        /** DRIVE ENCODER */
         m_driveEncoder = m_driveMotor.getEncoder();
-        m_driveEncoder.setInverted(driveEncInvert);
-        /* Conversion factor on the drive encoder. The values for position and velocity
-         * should be in meters and meters/second. The native units of the encoder are
-         * in rotations and RPM. */
+        // m_driveEncoder.setInverted(driveEncInvert);
         m_driveEncoder.setPositionConversionFactor(Constants.SwerveModule.kDriveEncoderPositionFactor);
         m_driveEncoder.setVelocityConversionFactor(Constants.SwerveModule.kDriveEncoderVelocityFactor);
-        m_driveEncoder.setPosition(0.0);
-        
+        m_driveEncoder.setAverageDepth(4);
+        m_driveEncoder.setMeasurementPeriod(16);
+        // m_driveEncoder.setPosition(0.0);
+
+        /** DRIVE PID CONTROLLER */
         m_drivePIDController = m_driveMotor.getPIDController();
         m_drivePIDController.setP(Constants.SwerveModule.kDriveP);
-        // m_drivePIDController.setI(Constants.SwerveModule.kDriveI);
-        // m_drivePIDController.setD(Constants.SwerveModule.kDriveD);
+        // m_drivePIDController.setI(Constants.SwerveModule.kDriveI); Don't Really Need These
+        // m_drivePIDController.setD(Constants.SwerveModule.kDriveD); They Make things Too Difficult Anyways
         // m_drivePIDController.setFF(Constants.SwerveModule.kDriveFF);
+
+
         
-        /* Burn the configurations to the flash memory of the motor */
-        m_driveMotor.burnFlash();
-
-
-
-        /* Create and configure the turn motor and related objects */
+        /** TURN MOTOR */
         m_turnMotor = new CANSparkFlex(turnCANid, MotorType.kBrushless);
         m_turnMotor.restoreFactoryDefaults();
         m_turnMotor.setInverted(turnMotorInvert);
         m_turnMotor.setIdleMode(IdleMode.kBrake);
         m_turnMotor.setSmartCurrentLimit(Constants.SwerveModule.kTurnMotorCurrentLimit);
-        // m_turnMotor.enableVoltageCompensation();
-        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 500);
-        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 500);
-        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
-        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500);       
+        m_turnMotor.enableVoltageCompensation(12.6);
+        // m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 500);
+        // m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 500);
+        // m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
+        // m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500);       
 
-
-
-        /* Setting up the CANcoder is a bit messy. The way that the Phoenix library is set up
-         * doesn't really make sense. Why would I need to call a get function to set something? */
-        m_turnCANcoder = new CANcoder(coderCANid);
-        m_turnCANcoder.getConfigurator().apply(new CANcoderConfiguration());
-        m_turnCANcoderConfig = new CANcoderConfiguration();
-        m_turnCANcoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
-        m_turnCANcoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-        m_turnCANcoder.getPosition().setUpdateFrequency(10);
-        m_turnCANcoder.getPosition().setUpdateFrequency(10);
-        m_turnCANcoder.getConfigurator().apply(m_turnCANcoderConfig);
-
-        /* 
-         * Set up the encoders to be the built-in 3 phase hall effect sensors.
-         * It is very important that the angle encoder is set up to be an
-         * absolute position so that at startup it won't matter what position
-         * the wheel are in and the software will just know what direction the
-         * wheels are facing.
-        */
+        /** TURN ENCODER (RELATIVE) */
         m_turnEncoder = m_turnMotor.getEncoder();
         m_turnEncoder.setPositionConversionFactor(Constants.SwerveModule.kDriveEncoderPositionFactor);
         m_turnEncoder.setVelocityConversionFactor(Constants.SwerveModule.kDriveEncoderVelocityFactor);
         m_turnEncoder.setMeasurementPeriod(16);
         m_turnEncoder.setAverageDepth(4);
-        
+
+        /** TURN PID CONTORLLER */
         m_turnPIDController = m_turnMotor.getPIDController();
         m_turnPIDController.setP(Constants.SwerveModule.kTurnP);
 
-        m_turnMotor.burnFlash();
-    }
+        /** TURN ENCODER (ABSOLUTE) */
+        m_absEncoder = new CANcoder(coderCANid);
+        m_absEncoder.getConfigurator().apply(new CANcoderConfiguration());
+        m_absEncoderConfig = new CANcoderConfiguration();
+        m_absEncoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+        m_absEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+        m_absEncoder.getPosition().setUpdateFrequency(10);
+        m_absEncoder.getPosition().setUpdateFrequency(10);
+        m_absEncoder.getConfigurator().apply(m_absEncoderConfig);
 
-
-
-    /**
-     * Gets the positonal state of the swerve module using the position
-     * and velocity.
-     * 
-     * @return the positional state of the module
-     */
-    public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(m_driveEncoder.getPosition(), getWheelAngle());
-    }
-
-    /**
-     * Get the wheel angle as read by the integrated motor encoder. The integrated encoder
-     * is set up to be relative and can have it's position set based on the absolute
-     * reading of the CANcoder.
-     * 
-     * @return the wheel angle (relative encoder)
-     */
-    public Rotation2d getWheelAngle() {
-        return Rotation2d.fromRadians(m_turnEncoder.getPosition());
+        /** OTHER THINGS TO SETUP */
+        offset = angleOffset;
+        m_turnEncoder.setPosition(getAbsEncoder());
+        
+        /** SAVE MOTOR CONFIGURATIONS */
+        m_driveMotor.burnFlash();
+        m_turnMotor.burnFlash();   
     }
 
     /**
-     * Get the wheel angle as read by the CANcoder mounted on the center axis of the
-     * swerve module. The mounted encoder is configured to read the Absolute reading
-     * which is prefered for measuring wheel angle since it will range between 0 and
-     * 360 degrees based on the magnetic north pole of the magnet relative to the
-     * sensor.
-     * 
-     * @return the absolute encoder reading of the CANcoder
-     */
-    public Rotation2d getCANcoderAngle() {
-        return Rotation2d.fromRadians(m_turnCANcoder.getAbsolutePosition().getValueAsDouble());
-    }
-
-    /**
-     * Get the current angle of the wheel from the CANcoder in terms of degrees.
-     * 
-     * @return angle of wheel in degrees from [0 to 360)
-     */
-    public double getAngleDegrees() {
-        double angle = getCANcoderAngle();
-        return Math.toDegrees(*2*Math.PI());
-    }
-
-    /**
-     * Get the State of the swerve module.
-     * 
-     * @return the state of the swerve module
+     * GET STATE OF MODULE
+     *
+     * @return the current state of the module
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(m_driveEncoder.getVelocity(), getWheelAngle());
+        return new SwerveModuleState(m_driveEncoder.getVelocity(), new Rotation2d(getStateAngle()));
     }
 
     /**
-     * Get the drive encoder position.
-     * 
-     * @return position of the drive encoder
+     * GET POSITION OF MODULE
+     *
+     * @return the current position of the module
      */
-    public double getDriveEncoderPosition() {
-        return m_driveEncoder.getPosition();
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(m_driveEnc.getPosition(), new Rotation2d(getStateAngle()));
     }
 
     /**
-     * Set the individual rotational position of the swerve module using the simple
-     * PID controller to an angle in radians.
-     * 
-     * @param angleRad
+     * SET THE DESIRED STATE OF THE MODULE
+     *
+     * @param desiredState Desired state with speed and angle.
      */
-    public void setRotation(double angleRad) {
-        m_turnMotor.set(
-            m_turnPIDControllerSimple.calculate(
-                getWheelAngle().getRadians(),
-                angleRad
-        ));
+    public void setDesiredState(SwerveModuleState desiredState) {
+        // Optimize the provided state to avoid spinning further than 90 degrees
+        SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(getStateAngle()));
+
+        // Calculate the desired FeedForward motor % from the current desired velocity and the static feedforward gains
+        final double driveFF = m_driveFF.calculate(state.speedMetersPerSecond);
+
+        // Set the reference state of the module
+        m_drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity, 0, driveFF * GlobalConstants.kVoltCompensation);
+        setReferenceAngle(state.angle.getRadians());
     }
 
     /**
-     * Sets the PID controller setpoints to the desired state. Defaults to an open
-     * loop control that is optimized.
-     * 
-     * @param state the desired state of the module
+     * SET REFERENCE ANGLE FOR TURN MOTOR
+     *
+     * @param referenceAngleRadians Desired reference angle.
      */
-    public void setState(SwerveModuleState state) {
-        setState(state, true, true);
-    }
+    public void setReferenceAngle(double referenceAngleRadians) {
+        double currentAngleRadians = m_turnEncoder.getPosition();
 
-    /**
-     * Sets the PID controller setpoints to the desired state.
-     * 
-     * @param state the desired state of the module
-     * @param openLoop run open or closed loop
-     * @param optimize optimize the state of the module
-     */
-    public void setState(SwerveModuleState state, boolean openLoop, boolean optimize) {
-        /* If the state of the module is less than the speed threshold then force the
-        motors to stop so there is no subtle drifting. Exit the function afterwards. */
-        if (state.speedMetersPerSecond < Constants.SwerveModule.kSpeedDeadband) {
-            stop();
-            return;
+        double currentAngleRadiansMod = currentAngleRadians % (2.0 * Math.PI);
+        if (currentAngleRadiansMod < 0.0) {
+            currentAngleRadiansMod += 2.0 * Math.PI;
         }
 
-        if (optimize) {
-            state = SwerveModuleState.optimize(
-                state, 
-                getWheelAngle()
-            );
+        // The reference angle has the range [0, 2pi) but the Neo's encoder can go above
+        // that
+        double adjustedReferenceAngleRadians = referenceAngleRadians + currentAngleRadians - currentAngleRadiansMod;
+        if (referenceAngleRadians - currentAngleRadiansMod > Math.PI) {
+            adjustedReferenceAngleRadians -= 2.0 * Math.PI;
+        } else if (referenceAngleRadians - currentAngleRadiansMod < -Math.PI) {
+            adjustedReferenceAngleRadians += 2.0 * Math.PI;
         }
 
-        if (openLoop) {
-            m_driveMotor.setVoltage(state.speedMetersPerSecond / Constants.Swerve.kMaxDriveMeterPerSec);
-            double v = m_turnPIDControllerSimple.calculate(getWheelAngle().getRadians(), state.angle.getRadians()) * 12;
-            if (v > 8) v = 8.0;
-            m_turnMotor.setVoltage(v);
+        m_referenceAngleRadians = referenceAngleRadians;
+        m_turnPIDController.setReference(adjustedReferenceAngleRadians, ControlType.kPosition);
+    }
+
+    /**
+     * GET REFERENCE ANGLE FOR TURN
+     *
+     * @return Reference angle
+     */
+    public double getReferenceAngle() {
+        return m_referenceAngleRadians;
+    }
+
+    /**
+     * GET STATE ANGLE FOR TURN
+     *
+     * @return state angle (radians)
+     */
+    public double getStateAngle() {
+        double motorAngleRadians = m_turnEncoder.getPosition();
+        
+        motorAngleRadians %= 2.0 * Math.PI;
+
+        // If the angle is less than zero than correct value to be an angle between 0 and 2pi
+        if (motorAngleRadians < 0.0) {
+            motorAngleRadians += 2.0 * Math.PI;
+        }
+        
+        return motorAngleRadians;
+    }
+
+    /**
+     * GET ABSOLUTE ENCODER ANGLE
+     *
+     * @return absolute angle (radians)
+     */
+    public double getAbsEncoder() {
+        double absEnc = m_absEncoder.getAbsolutePosition() * 2 * Math.PI + m_offset;
+        // double absEnc = m_absEncoder.getAbsolutePosition().getValueAsDouble(); * 2 * Math.PI + m_offset;
+        return absEnc;
+    }
+
+    /**
+     * CHANGE DRIVE MOTOR IDLE MODE STATE
+     *
+     * @param brake mode enabled (boolean)
+     */
+    public void enableBrake(boolean brake) {
+        if (brake) {
+            m_driveMotor.setIdleMode(IdleMode.kBrake);
         } else {
-            this.drivePIDControllerOutput = m_drivePIDController.calculate(m_driveEncoder.getVelocity(), state.speedMetersPerSecond);
-            this.driveFFControllerOutput = driveFeedforward.calculate(state.speedMetersPerSecond);
-            this.driveMotorVel = m_driveEncoder.getVelocity();
-            this.driveMotorVelCF = m_driveEncoder.getVelocityConversionFactor();
-
-            double turnOutput = m_turnPIDController.calculate(getWheelAngle().getRadians(), state.angle.getRadians());
-
-            m_driveMotor.setVoltage(drivePIDControllerOutput + driveFFControllerOutput);
-            m_turnMotor.set(turnOutput);
+            m_driveMotor.setIdleMode(IdleMode.kCoast);
         }
     }
 
     /**
-     * Set the drive motor speed independently of everything else
-     * for troubleshooting purposes.
-     * 
-     * @param speed of drive motor in terms of percent output
+     * STOP MOTOR MOVEMENT
      */
-    public void setDriveSpeed(double speed) {
-        m_driveMotor.set(speed);
-    }
-
-    public double getTurningVelocity() {
-        return m_turnEncoder.getVelocity();
-    }
-
-    public double getDriveVelocity() {
-        return m_driveEncoder.getVelocity();
+    public void stop() {
+        m_driveMotor.set(0.0);
+        m_turnMotor.set(0.0);
     }
 
     /**
-     * Resets the integrated turn motor encoder to the positon of the CANcoder absolute
-     * reading.
-     */
-    public void resetToAbsolute() {
-        double absolutePosition = getCANcoderAngle().getRadians() - turnCANcoderOffset;
-        m_turnEncoder.setPosition(absolutePosition);
-    }
-
-    /**
-     * Reset the positon of the drive encoder to zero.
+     * RESET DRIVE ENCODER POSITION
      */
     public void resetDriveEncoder() {
         m_driveEncoder.setPosition(0);
-    }
-
-    /**
-     * Stop Motors to essentially force stop the whole module from moving
-     */
-    public void stop() {
-        m_driveMotor.set(0);
-        m_turnMotor.set(0);
-    }
-
-    public double getRawEncoder() {
-        return m_turnCANcoder.getAbsolutePosition().getValueAsDouble();
     }
 }
