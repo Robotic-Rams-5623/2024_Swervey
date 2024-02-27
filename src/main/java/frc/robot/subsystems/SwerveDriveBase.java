@@ -53,13 +53,13 @@ public class SwerveDriveBase extends SubsystemBase {
   private double timeSinceDrive = 0.0;
   private double lastDriveTime = 0.0;
 
-  private final PIDController m_keepAnglePID = new PIDController(KeepAngle.kp, KeepAngle.ki, KeepAngle.kd);
+  private final PIDController m_keepAnglePID = new PIDController(0.3, 0.0, 0.0);
 
   private final Timer m_keepAngleTimer = new Timer();
 
-  private SlewRateLimiter m_slewX = new SlewRateLimiter(DriveConstants.kTransSlewRate);
-  private SlewRateLimiter m_slewY = new SlewRateLimiter(DriveConstants.kTransSlewRate);
-  private SlewRateLimiter m_slewRot = new SlewRateLimiter(DriveConstants.kRotSlewRate);
+  private SlewRateLimiter m_slewX = new SlewRateLimiter(Constants.Swerve.kTransSlewRate);
+  private SlewRateLimiter m_slewY = new SlewRateLimiter(Constants.Swerve.kTransSlewRate);
+  private SlewRateLimiter m_slewRot = new SlewRateLimiter(Constants.Swerve.kRotSlewRate);
 
   /** 
    * Create the gyro sensor that will help with the odometry of the driving
