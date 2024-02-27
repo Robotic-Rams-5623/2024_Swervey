@@ -27,9 +27,9 @@ public class RobotContainer {
    */
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final SwerveDriveBase m_drive = new SwerveDriveBase();
-  private final Climb m_climb = new Climb();
-  private final Handler m_tilt = new Handler();
-  private final Launcher m_launch = new Launcher();
+  // private final Climb m_climb = new Climb();
+  // private final Handler m_tilt = new Handler();
+  // private final Launcher m_launch = new Launcher();
 
 
   /**
@@ -55,13 +55,7 @@ public class RobotContainer {
      * Set the default commands for the various subsystems. (i.e. Human control
      * for the robot driving)
      */
-    m_drive.setDefaultCommand(
-      new teleopDrive(
-        m_drive, 
-        () -> -m_driverController.getLeftY(),
-        () -> -m_driverController.getLeftX(),
-        () -> -m_driverController.getRightX(),
-        () -> true));
+    m_drive.setDefaultCommand(new teleopDrive(m_drive, m_driverController));
   }
 
 
@@ -116,39 +110,39 @@ public class RobotContainer {
 
 
     /* FEED NOTE INTO LAUNCHER */
-    m_actionController.a().onTrue( // 
-      new StartEndCommand(
-        m_tilt::feedExtend, 
-        m_tilt::feedRetract,
-        m_tilt
-    ));
-    // END FEED NOTE COMMAND
+    // m_actionController.a().onTrue( // 
+    //   new StartEndCommand(
+    //     m_tilt::feedExtend, 
+    //     m_tilt::feedRetract,
+    //     m_tilt
+    // ));
+    // // END FEED NOTE COMMAND
 
-    /* LAUNCH NOTE MANUAL */
-    m_actionController.x().onTrue(
-      new StartEndCommand(
-        () -> m_launch.launch(0.7), 
-        m_launch::stop,
-        m_launch
-    ));
+    // /* LAUNCH NOTE MANUAL */
+    // m_actionController.x().onTrue(
+    //   new StartEndCommand(
+    //     () -> m_launch.launch(0.7), 
+    //     m_launch::stop,
+    //     m_launch
+    // ));
 
 
-    /* TILT HANDLER MECHANISM UPWARDS */
-    m_actionController.leftBumper().onTrue(
-      new StartEndCommand(
-        m_tilt::manualUp, 
-        m_tilt::stop, 
-        m_tilt
-    ));
-    // END TILT UP COMMAND
+    // /* TILT HANDLER MECHANISM UPWARDS */
+    // m_actionController.leftBumper().onTrue(
+    //   new StartEndCommand(
+    //     m_tilt::manualUp, 
+    //     m_tilt::stop, 
+    //     m_tilt
+    // ));
+    // // END TILT UP COMMAND
 
-    /* TILT HANDLER MECHANISM DOWNWARDS */
-    m_actionController.rightBumper().onTrue(
-      new StartEndCommand(
-        m_tilt::manualDown, 
-        m_tilt::stop, 
-        m_tilt
-    ));
+    // /* TILT HANDLER MECHANISM DOWNWARDS */
+    // m_actionController.rightBumper().onTrue(
+    //   new StartEndCommand(
+    //     m_tilt::manualDown, 
+    //     m_tilt::stop, 
+    //     m_tilt
+    // ));
     // END TILT DOWN COMMAND
 
 

@@ -10,6 +10,7 @@ import java.util.function.DoubleSupplier;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -85,7 +87,7 @@ public class SwerveDriveBase extends SubsystemBase {
                                                      Constants.MotorIDs.kFrontRightTurnCANid,
                                                      Constants.MotorIDs.kFrontRightCANcoderid,
                                                      Constants.Swerve.kFrontRightAngleOffset,
-                                                     true,
+                                                     false,
                                                      false,
                                                      false,
                                                      false);
@@ -94,7 +96,7 @@ public class SwerveDriveBase extends SubsystemBase {
                                                      Constants.MotorIDs.kBackRightTurnCANid,
                                                      Constants.MotorIDs.kBackRightCANcoderid,
                                                      Constants.Swerve.kBackRightAngleOffset,
-                                                     true,
+                                                     false,
                                                      false,
                                                      false,
                                                      false);
@@ -180,6 +182,8 @@ public class SwerveDriveBase extends SubsystemBase {
     m_odometry.resetPosition(m_gyro.getRotation2d(), getModulePositions(), new Pose2d());
     m_gyro.reset();
 
+    stop();
+
     // AUTOBUILDER REQUIREMENTS??? (FRC TEAM 1706 CODE)
   }
 
@@ -208,13 +212,13 @@ public class SwerveDriveBase extends SubsystemBase {
       rot = performKeepAngle(xSpeed, ySpeed, rot); // Calls the keep angle function to update the keep angle or rotate
     }
 
-    if (Math.abs(rot) < 0.02) {
+    if (Math.abs(rot) < 0.03) {
       rot = 0.0;
     }
-    if (Math.abs(xSpeed) < 0.02) {
+    if (Math.abs(xSpeed) < 0.03) {
       xSpeed = 0.0;
     }
-    if (Math.abs(ySpeed) < 0.02) {
+    if (Math.abs(ySpeed) < 0.03) {
       ySpeed = 0.0;
     }
 
@@ -239,10 +243,15 @@ public class SwerveDriveBase extends SubsystemBase {
 
     SmartDashboard.putNumber("Speed", speed);
 
-    SmartDashboard.putNumber("Front Left Encoder", m_FLModule.getStateAngle());
-    SmartDashboard.putNumber("Front Right Encoder", m_FRModule.getStateAngle());
-    SmartDashboard.putNumber("Rear Left Encoder", m_RLModule.getStateAngle());
-    SmartDashboard.putNumber("Rear Right Encoder", m_RRModule.getStateAngle());
+    SmartDashboard.putNumber("Front Left Encoder", m_FLModule.getAbsEncoder());
+    SmartDashboard.putNumber("Front Right Encoder", m_FRModule.getAbsEncoder());
+    SmartDashboard.putNumber("Rear Left Encoder", m_RLModule.getAbsEncoder());
+    SmartDashboard.putNumber("Rear Right Encoder", m_RRModule.getAbsEncoder());
+
+    SmartDashboard.putNumber("Front Left Turn Encoder", m_FLModule.getTurnPosition());
+    SmartDashboard.putNumber("Front Right Turn Encoder", m_FRModule.getTurnPosition());
+    SmartDashboard.putNumber("Rear Left Turn Encoder", m_RLModule.getTurnPosition());
+    SmartDashboard.putNumber("Rear Right Turn Encoder", m_RRModule.getTurnPosition());
 
     updateOdometry();
 
@@ -410,13 +419,13 @@ public class SwerveDriveBase extends SubsystemBase {
    * @return ChassisSpeeds object containing robot X, Y, and Angular velocity
    */
   public ChassisSpeeds getChassisSpeed() {
-    return DriveConstants.kSwerveKinematics.toChassisSpeeds(m_FLModule.getState(),
+    return Constants.Swerve.kDriveKinematics.toChassisSpeeds(m_FLModule.getState(),
                                                             m_FRModule.getState(),
                                                             m_RLModule.getState(),
                                                             m_RRModule.getState());
   }
   public ChassisSpeeds getCorDesChassisSpeed() {
-    return DriveConstants.kSwerveKinematics.toChassisSpeeds(m_desStates[0],
+    return Constants.Swerve.kDriveKinematics.toChassisSpeeds(m_desStates[0],
                                                             m_desStates[1],
                                                             m_desStates[2],
                                                             m_desStates[3]);

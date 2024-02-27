@@ -3,7 +3,7 @@
  * Thanks for unknowingly helping our beginner swerve drive!
  */
 
-package frc.robot.utilities;
+package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants.OperatorConstants;
@@ -19,12 +19,12 @@ public class MathUtils {
   }
 
   public static double applyDeadband(double input) {
-    if (Math.abs(input) < OperatorConstants.kDeadband) {
+    if (Math.abs(input) < OperatorConstants.kDriverDeadband) {
       return 0.0;
     } else if (input < 0.0) {
-      return (input + OperatorConstants.kDeadband) * (1.0 / (1 - OperatorConstants.kDeadband));
+      return (input + OperatorConstants.kDriverDeadband) * (1.0 / (1 - OperatorConstants.kDriverDeadband));
     } else if (input > 0.0) {
-      return (input - OperatorConstants.kDeadband) * (1.0 / (1 - OperatorConstants.kDeadband));
+      return (input - OperatorConstants.kDriverDeadband) * (1.0 / (1 - OperatorConstants.kDriverDeadband));
     } else {
       return 0.0;
     }

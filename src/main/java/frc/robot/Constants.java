@@ -21,6 +21,8 @@ public final class Constants {
 public static class OperatorConstants {
   public static final int kDriverUSBPort = 0;
   public static final double kDriverDeadband = 0.05;
+  public static final double kCubic = 0.95;
+  public static final double kLinear = 0.05;
   public static final int kActionUSBPort = 1;
   public static final double kActionDeadband = 0.05;
 }
@@ -176,10 +178,10 @@ public static class Swerve {
   // Set up robot so that the wheel bevel gears are all facing left and are straight as possible!
   // Replace the 0.0 inside the -Math.toRadians() with the recorded value.
   // Wheels spinning in the incorrect direction should get a +180deg (or PI) added to the offset.
-  public static final double kFrontLeftAngleOffset = -Math.toRadians(0.0); // 0 Degrees
-  public static final double kFrontRightAngleOffset = -Math.toRadians(0.0); // 90 degrees
-  public static final double kBackLeftAngleOffset = -Math.toRadians(0.0); // 270 degrees
-  public static final double kBackRightAngleOffset = -Math.toRadians(0.0); // 0 degrees
+  public static final double kFrontLeftAngleOffset = -5.861340590511035; 
+  public static final double kFrontRightAngleOffset = -5.652719203358588; 
+  public static final double kBackLeftAngleOffset = -5.00077736850719;
+  public static final double kBackRightAngleOffset = -0.612058334366371; 
   
   // Distance between the centers of the left and right wheel in the robot
   public static final double kWheelBase = Units.inchesToMeters(22.0);
@@ -226,7 +228,7 @@ public static class SwerveModule {
   public static final double kDriveWheelFreeSpeedRps = (kDriveMotorFreeSpeedRps * kWheelCircumferenceMeters) / kDriveMotorReduction; // rev/sec
   // Drive encoder position/velocity conversion factors
   public static final double kDriveEncoderPositionFactor = (1.0 / kDriveMotorReduction) * kWheelCircumferenceMeters; // meters
-  public static final double kDriveEncoderVelocityFactor = kTurnEncoderPositionFactor / 60.0; // meters per second
+  public static final double kDriveEncoderVelocityFactor = kDriveEncoderPositionFactor / 60.0; // meters per second
 
   // Turn encoder position/velocity conversion factors
   public static final double kTurnEncoderPositionFactor = 1.0 / (kDriveMotorReduction) * 2 * Math.PI; // radians
@@ -257,8 +259,8 @@ public static class SwerveModule {
   public static final IdleMode kDriveMotorIdleMode = IdleMode.kBrake;
   public static final IdleMode kTurnMotorIdleMode = IdleMode.kBrake;
   // Limit current to that of the brakers for now, maybe lower if we blow any
-  public static final int kDriveMotorCurrentLimit = 50; // amps
-  public static final int kTurnMotorCurrentLimit = 30; // amps
+  public static final int kDriveMotorCurrentLimit = 40; // amps
+  public static final int kTurnMotorCurrentLimit = 20; // amps
 
   public static final double kSpeedDeadband = 0.05; // NOT IMPORTANT
   }

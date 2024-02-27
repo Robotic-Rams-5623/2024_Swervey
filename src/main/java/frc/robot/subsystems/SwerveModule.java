@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CANcoderConfigurator;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
@@ -8,6 +10,7 @@ import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
@@ -18,6 +21,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 /**
@@ -35,10 +39,10 @@ public class SwerveModule {
     private RelativeEncoder m_driveEncoder;
     private RelativeEncoder m_turnEncoder;
     private CANcoder m_absEncoder;
-    private CANcoderConfiguration m_absEncoderConfig;
+    
     private SparkPIDController m_drivePIDController;
     private SparkPIDController m_turnPIDController;
-    private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(
+    private SimpleMotorFeedforward m_driveFF = new SimpleMotorFeedforward(
         Constants.SwerveModule.kDriveS, 
         Constants.SwerveModule.kDriveV
     );
@@ -85,24 +89,28 @@ public class SwerveModule {
         m_driveMotor.setInverted(driveMotorInvert);
         m_driveMotor.setIdleMode(IdleMode.kBrake);
         m_driveMotor.setSmartCurrentLimit(Constants.SwerveModule.kDriveMotorCurrentLimit);
-        m_driveMotor.enableVoltageCompensation(12.6)
-        // m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 500);
-        // m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
-        // m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
-        // m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 50);
+        m_driveMotor.enableVoltageCompensation(11.5);
+        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 100);
+        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 500);
+        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 100);
+        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 1000);
+        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 1000);
+        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 1000);
+        m_driveMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 1000);
 
         /** DRIVE ENCODER */
         m_driveEncoder = m_driveMotor.getEncoder();
         // m_driveEncoder.setInverted(driveEncInvert);
         m_driveEncoder.setPositionConversionFactor(Constants.SwerveModule.kDriveEncoderPositionFactor);
         m_driveEncoder.setVelocityConversionFactor(Constants.SwerveModule.kDriveEncoderVelocityFactor);
-        m_driveEncoder.setAverageDepth(4);
-        m_driveEncoder.setMeasurementPeriod(16);
-        // m_driveEncoder.setPosition(0.0);
+        // m_driveEncoder.setAverageDepth(4);
+        // m_driveEncoder.setMeasurementPeriod(16);
+        m_driveEncoder.setPosition(0.0);
 
         /** DRIVE PID CONTROLLER */
         m_drivePIDController = m_driveMotor.getPIDController();
         m_drivePIDController.setP(Constants.SwerveModule.kDriveP);
+        m_drivePIDController.setFeedbackDevice(m_driveEncoder);
         // m_drivePIDController.setI(Constants.SwerveModule.kDriveI); Don't Really Need These
         // m_drivePIDController.setD(Constants.SwerveModule.kDriveD); They Make things Too Difficult Anyways
         // m_drivePIDController.setFF(Constants.SwerveModule.kDriveFF);
@@ -115,32 +123,43 @@ public class SwerveModule {
         m_turnMotor.setInverted(turnMotorInvert);
         m_turnMotor.setIdleMode(IdleMode.kBrake);
         m_turnMotor.setSmartCurrentLimit(Constants.SwerveModule.kTurnMotorCurrentLimit);
-        m_turnMotor.enableVoltageCompensation(12.6);
-        // m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 500);
-        // m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 500);
-        // m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
-        // m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500);       
+        m_turnMotor.enableVoltageCompensation(11.5);
+        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 100);
+        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 500);
+        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 100);
+        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 1000);
+        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 100);       
+        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 1000);       
+        m_turnMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 1000);       
 
         /** TURN ENCODER (RELATIVE) */
         m_turnEncoder = m_turnMotor.getEncoder();
         m_turnEncoder.setPositionConversionFactor(Constants.SwerveModule.kDriveEncoderPositionFactor);
         m_turnEncoder.setVelocityConversionFactor(Constants.SwerveModule.kDriveEncoderVelocityFactor);
-        m_turnEncoder.setMeasurementPeriod(16);
-        m_turnEncoder.setAverageDepth(4);
+        //m_turnEncoder.setInverted(turnEncInvert);
+        // m_turnEncoder.setMeasurementPeriod(16);
+        // m_turnEncoder.setAverageDepth(4);
 
         /** TURN PID CONTORLLER */
         m_turnPIDController = m_turnMotor.getPIDController();
         m_turnPIDController.setP(Constants.SwerveModule.kTurnP);
+        m_turnPIDController.setFeedbackDevice(m_turnEncoder);
+        m_turnPIDController.setPositionPIDWrappingEnabled(true);
+        m_turnPIDController.setPositionPIDWrappingMinInput(0);
+        m_turnPIDController.setPositionPIDWrappingMaxInput(90);
 
         /** TURN ENCODER (ABSOLUTE) */
         m_absEncoder = new CANcoder(coderCANid);
         m_absEncoder.getConfigurator().apply(new CANcoderConfiguration());
-        m_absEncoderConfig = new CANcoderConfiguration();
-        m_absEncoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
-        m_absEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-        m_absEncoder.getPosition().setUpdateFrequency(10);
-        m_absEncoder.getPosition().setUpdateFrequency(10);
-        m_absEncoder.getConfigurator().apply(m_absEncoderConfig);
+        CANcoderConfigurator m_absEncoderConfig = m_absEncoder.getConfigurator();
+        MagnetSensorConfigs magnetSensorConfiguration = new MagnetSensorConfigs();
+        m_absEncoderConfig.refresh(magnetSensorConfiguration);
+        m_absEncoderConfig.apply(magnetSensorConfiguration.withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1).withSensorDirection(SensorDirectionValue.CounterClockwise_Positive));
+        // m_absEncoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+        // m_absEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+        // m_absEncoder.getPosition().setUpdateFrequency(10);
+        // m_absEncoder.getPosition().setUpdateFrequency(10);
+        // m_absEncoder.getConfigurator().apply(m_absEncoderConfig);
 
         /** OTHER THINGS TO SETUP */
         offset = angleOffset;
@@ -148,7 +167,7 @@ public class SwerveModule {
         
         /** SAVE MOTOR CONFIGURATIONS */
         m_driveMotor.burnFlash();
-        m_turnMotor.burnFlash();   
+        m_turnMotor.burnFlash();  
     }
 
     /**
@@ -166,7 +185,7 @@ public class SwerveModule {
      * @return the current position of the module
      */
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(m_driveEnc.getPosition(), new Rotation2d(getStateAngle()));
+        return new SwerveModulePosition(m_driveEncoder.getPosition(), new Rotation2d(getStateAngle()));
     }
 
     /**
@@ -182,7 +201,7 @@ public class SwerveModule {
         final double driveFF = m_driveFF.calculate(state.speedMetersPerSecond);
 
         // Set the reference state of the module
-        m_drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity, 0, driveFF * GlobalConstants.kVoltCompensation);
+        m_drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity, 0, driveFF * 11.5);
         setReferenceAngle(state.angle.getRadians());
     }
 
@@ -229,12 +248,12 @@ public class SwerveModule {
     public double getStateAngle() {
         double motorAngleRadians = m_turnEncoder.getPosition();
         
-        motorAngleRadians %= 2.0 * Math.PI;
+        // motorAngleRadians %= 2.0 * Math.PI;
 
-        // If the angle is less than zero than correct value to be an angle between 0 and 2pi
-        if (motorAngleRadians < 0.0) {
-            motorAngleRadians += 2.0 * Math.PI;
-        }
+        // // If the angle is less than zero than correct value to be an angle between 0 and 2pi
+        // if (motorAngleRadians < 0.0) {
+        //     motorAngleRadians += 2.0 * Math.PI;
+        // }
         
         return motorAngleRadians;
     }
@@ -245,8 +264,7 @@ public class SwerveModule {
      * @return absolute angle (radians)
      */
     public double getAbsEncoder() {
-        double absEnc = m_absEncoder.getAbsolutePosition() * 2 * Math.PI + m_offset;
-        // double absEnc = m_absEncoder.getAbsolutePosition().getValueAsDouble(); * 2 * Math.PI + m_offset;
+        double absEnc = m_absEncoder.getAbsolutePosition().refresh().getValue() * 2 * Math.PI + offset;
         return absEnc;
     }
 
@@ -276,5 +294,9 @@ public class SwerveModule {
      */
     public void resetDriveEncoder() {
         m_driveEncoder.setPosition(0);
+    }
+
+    public double getTurnPosition() {
+        return m_turnEncoder.getPosition();
     }
 }
