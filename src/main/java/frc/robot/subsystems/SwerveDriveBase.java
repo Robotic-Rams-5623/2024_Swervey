@@ -183,13 +183,6 @@ public class SwerveDriveBase extends SubsystemBase {
     // AUTOBUILDER REQUIREMENTS??? (FRC TEAM 1706 CODE)
   }
 
-  /** ITEMS TO SEARCH AND REPLACE
-   * ahrs = m_gyro
-   * 
-   *
-   *
-   *
-   */
 
   
   /**
@@ -231,7 +224,7 @@ public class SwerveDriveBase extends SubsystemBase {
       setModuleStates(new ChassisSpeeds(xSpeed, ySpeed, rot));
     }
   }
-
+  
   /**
    * Periodic runs once every scheduler call. Great place to put logging/dashboard
    * functions and math that needs to be done frequently.
