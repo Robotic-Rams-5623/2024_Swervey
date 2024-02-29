@@ -1,3 +1,18 @@
 Files placed in this directory will be deployed to the RoboRIO into the
 'deploy' directory in the home folder. Use the 'Filesystem.getDeployDirectory' wpilib function
 to get a proper path relative to the deploy directory.
+
+PathPlanner Docs:
+https://pathplanner.dev/home.html
+
+PathPlanner Manual:
+https://github.com/mjansen4857/pathplanner/releases
+
+PathPlanner Store:
+https://www.microsoft.com/en-us/p/frc-pathplanner/9nqbkb5dw909?cid=storebadge&ocid=badge&rtc=1&activetab=pivot:overviewtab
+
+Import PathPlanner:
+https://3015rangerrobotics.github.io/pathplannerlib/PathplannerLib.json
+
+Limelight for april tag tracking/Main Camera:
+https://docs.limelightvision.io/docs/docs-limelight/getting-started/imaging
