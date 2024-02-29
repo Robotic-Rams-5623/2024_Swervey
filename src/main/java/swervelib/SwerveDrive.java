@@ -30,10 +30,8 @@ import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import swervelib.encoders.CANCoderSwerve;
-import swervelib.imu.Pigeon2Swerve;
 import swervelib.imu.SwerveIMU;
 import swervelib.math.SwerveMath;
-import swervelib.motors.TalonFXSwerve;
 import swervelib.parser.Cache;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -245,22 +243,21 @@ public class SwerveDrive
    */
   private void checkIfTunerXCompatible()
   {
-    boolean compatible = imu instanceof Pigeon2Swerve;
+    boolean compatible = true;
+
     for (SwerveModule module : swerveModules)
     {
-      compatible = compatible && module.getDriveMotor() instanceof TalonFXSwerve &&
-                   module.getAngleMotor() instanceof TalonFXSwerve &&
-                   module.getAbsoluteEncoder() instanceof CANCoderSwerve;
+      compatible = module.getAbsoluteEncoder() instanceof CANCoderSwerve;
       if (!compatible)
       {
         break;
       }
     }
+
     if (compatible)
     {
       tunerXRecommendation.set(true);
     }
-
   }
 
   /**
