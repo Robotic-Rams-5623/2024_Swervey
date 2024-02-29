@@ -11,15 +11,8 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort.Port;
 import swervelib.encoders.AnalogAbsoluteEncoderSwerve;
 import swervelib.encoders.CANCoderSwerve;
-import swervelib.encoders.CanAndCoderSwerve;
-import swervelib.encoders.PWMDutyCycleEncoderSwerve;
-import swervelib.encoders.SparkMaxAnalogEncoderSwerve;
-import swervelib.encoders.SparkMaxEncoderSwerve;
 import swervelib.encoders.SwerveAbsoluteEncoder;
-import swervelib.imu.ADIS16448Swerve;
-import swervelib.imu.ADIS16470Swerve;
 import swervelib.imu.ADXRS450Swerve;
-import swervelib.imu.AnalogGyroSwerve;
 import swervelib.imu.NavXSwerve;
 import swervelib.imu.Pigeon2Swerve;
 import swervelib.imu.PigeonSwerve;
@@ -68,22 +61,6 @@ public class DeviceJson
       case "none":
         return null;
       case "integrated":
-      case "attached":
-        return new SparkMaxEncoderSwerve(motor, 1);
-      case "sparkmax_analog":
-        return new SparkMaxAnalogEncoderSwerve(motor);
-      case "canandcoder":
-        return new SparkMaxEncoderSwerve(motor, 360);
-      case "canandcoder_can":
-        return new CanAndCoderSwerve(id);
-      case "ctre_mag":
-      case "rev_hex":
-      case "throughbore":
-      case "am_mag":
-      case "dutycycle":
-        return new PWMDutyCycleEncoderSwerve(id);
-      case "thrifty":
-      case "ma3":
       case "analog":
         return new AnalogAbsoluteEncoderSwerve(id);
       case "cancoder":
@@ -106,14 +83,8 @@ public class DeviceJson
     }
     switch (type)
     {
-      case "adis16448":
-        return new ADIS16448Swerve();
-      case "adis16470":
-        return new ADIS16470Swerve();
       case "adxrs450":
         return new ADXRS450Swerve();
-      case "analog":
-        return new AnalogGyroSwerve(id);
       case "navx":
       case "navx_spi":
         return new NavXSwerve(SPI.Port.kMXP);

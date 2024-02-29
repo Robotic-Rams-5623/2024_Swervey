@@ -25,7 +25,7 @@ public final class Constants {
     public static final double kDriverDb_LeftX = 0.1;
     public static final double kDriverDb_LeftY = 0.1;
     public static final double kDriverDb_RightX = 0.1;
-    public static final double TURN_CONSTANT = 6;
+    public static final double TURN_CONSTANT = 7;
     
     public static final int kActionUSBPort = 1;
     public static final double kActionDeadband = 0.05;

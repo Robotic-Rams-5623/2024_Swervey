@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants.AutonConstants;
 import java.io.File;
 import java.util.function.DoubleSupplier;
-import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
+// import org.photonvision.PhotonCamera;
+// import org.photonvision.targeting.PhotonPipelineResult;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -130,19 +130,19 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param camera {@link PhotonCamera} to communicate with.
    * @return A {@link Command} which will run the alignment.
    */
-  public Command aimAtTarget(PhotonCamera camera)
-  {
-    return run(() -> {
-      PhotonPipelineResult result = camera.getLatestResult();
-      if (result.hasTargets())
-      {
-        drive(getTargetSpeeds(0,
-                              0,
-                              Rotation2d.fromDegrees(result.getBestTarget()
-                                                           .getYaw()))); // Not sure if this will work, more math may be required.
-      }
-    });
-  }
+  // public Command aimAtTarget(PhotonCamera camera)
+  // {
+  //   return run(() -> {
+  //     PhotonPipelineResult result = camera.getLatestResult();
+  //     if (result.hasTargets())
+  //     {
+  //       drive(getTargetSpeeds(0,
+  //                             0,
+  //                             Rotation2d.fromDegrees(result.getBestTarget()
+  //                                                          .getYaw()))); // Not sure if this will work, more math may be required.
+  //     }
+  //   });
+  // }
 
 
   
