@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 
@@ -72,6 +73,14 @@ public class Handler extends PIDSubsystem {
     m_TiltMotor.setIdleMode(Constants.Handler.kIdleMode); // Brake or Coast
     m_TiltMotor.setInverted(Constants.Handler.kMotorInverted);
     m_TiltMotor.setSmartCurrentLimit(Constants.Handler.kCurrentLimit); // 30 Amp Limit (40 Amp Breaker)
+
+    m_TiltMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 100);
+    m_TiltMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
+    m_TiltMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
+    m_TiltMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 0);
+    m_TiltMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 0);       
+    m_TiltMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 0);       
+    m_TiltMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 0); 
 
     m_TiltMotor.burnFlash();
   }

@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -88,6 +89,14 @@ public class Climb extends SubsystemBase {
     SmartDashboard.putNumber("Climb kFeed Forward", kFF);
 
     m_ClimbPIDController.setFeedbackDevice(m_ClimbEncoder);
+
+    m_ClimbMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 100);
+    m_ClimbMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
+    m_ClimbMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
+    m_ClimbMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 0);
+    m_ClimbMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 0);       
+    m_ClimbMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 0);       
+    m_ClimbMotor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 0); 
 
     /* Save Climb Motor Settings to the Flash Memory of the Controller */
     m_ClimbMotor.burnFlash();//

@@ -25,12 +25,13 @@ public class teleopDrive extends Command {
     // double desiredTrans[] = MathUtils.inputTransform(-m_controller.getLeftY(), -m_controller.getLeftX());
     double maxLinear = Constants.Swerve.kMaxDriveMeterPerSec;
 
+    MathUtil.applyDeadband(m_controller.getLeftY(), 0.1);
     // desiredTrans[0] *= maxLinear;
     // desiredTrans[1] *= maxLinear;
 
-    double xTrans = -m_controller.getLeftY() * maxLinear;
-    double yTrans = -m_controller.getLeftX() * maxLinear;
-    double rot = m_controller.getRightX() * Constants.Swerve.kMaxTurnRadianPerSec;
+    double xTrans = -MathUtil.applyDeadband(m_controller.getLeftY(), 0.1) * maxLinear;
+    double yTrans = -MathUtil.applyDeadband(m_controller.getLeftX(), 0.1) * maxLinear;
+    double rot = MathUtil.applyDeadband(m_controller.getRightX(), 0.1) * Constants.Swerve.kMaxTurnRadianPerSec;
 
     // double desiredRot = -MathUtils.inputTransform(m_controller.getRightX()) * Constants.Swerve.kMaxTurnRadianPerSec;
 

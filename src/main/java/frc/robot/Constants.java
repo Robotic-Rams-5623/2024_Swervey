@@ -20,11 +20,11 @@ public final class Constants {
   
 public static class OperatorConstants {
   public static final int kDriverUSBPort = 0;
-  public static final double kDriverDeadband = 0.05;
+  public static final double kDriverDeadband = 0.1;
   public static final double kCubic = 0.95;
   public static final double kLinear = 0.05;
   public static final int kActionUSBPort = 1;
-  public static final double kActionDeadband = 0.05;
+  public static final double kActionDeadband = 0.1;
 }
 
 
@@ -51,6 +51,9 @@ public static class MotorIDs {
   public static final int kRLauncherMotorCANid = 32; 
   public static final int kLLauncherMotorCANid = 33;
   public static final int kLaunchFeedServoid = 0;
+
+  /** INTAKE IDs */
+  public static final int kIntakeMotorCANid = 10;
 
   /** NOTE HANDLER/TILTER MECHANISM IDs */
   public static final int kTiltMotorCANid = 34;
@@ -179,10 +182,10 @@ public static class Swerve {
   // Set up robot so that the wheel bevel gears are all facing left and are straight as possible!
   // Replace the 0.0 inside the -Math.toRadians() with the recorded value.
   // Wheels spinning in the incorrect direction should get a +180deg (or PI) added to the offset.
-  public static final double kFrontLeftAngleOffset = -5.861340590511035; 
-  public static final double kFrontRightAngleOffset = -5.652719203358588; 
-  public static final double kBackLeftAngleOffset = -5.00077736850719;
-  public static final double kBackRightAngleOffset = -0.612058334366371; 
+  public static final double kFrontLeftAngleOffset = -6.191253662109375 + 6.596038818359375; 
+  public static final double kFrontRightAngleOffset = -0.004592895507812 + 0.630447387695312; 
+  public static final double kBackLeftAngleOffset = 0.0;
+  public static final double kBackRightAngleOffset = 0.007659912109375 - 0.507720947265625; 
   
   // Distance between the centers of the left and right wheel in the robot
   public static final double kWheelBase = Units.inchesToMeters(22.0);

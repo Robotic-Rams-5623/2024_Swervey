@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -125,6 +126,21 @@ public class Launcher extends SubsystemBase {
     SmartDashboard.putNumber("Launcher kD", kD);
     SmartDashboard.putNumber("Launcher kI Zone", kIz);
     SmartDashboard.putNumber("Launcher kFeed Forward", kFF);
+
+    m_LauncherMotorLeft.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 100);
+    m_LauncherMotorLeft.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
+    m_LauncherMotorLeft.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
+    m_LauncherMotorLeft.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 0);
+    m_LauncherMotorLeft.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 0);       
+    m_LauncherMotorLeft.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 0);       
+    m_LauncherMotorLeft.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 0); 
+    m_LauncherMotorRight.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus0, 100);
+    m_LauncherMotorRight.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus1, 20);
+    m_LauncherMotorRight.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 20);
+    m_LauncherMotorRight.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 0);
+    m_LauncherMotorRight.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 0);       
+    m_LauncherMotorRight.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 0);       
+    m_LauncherMotorRight.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 0); 
 
     /* Save all the configurations to the motors */
     m_LauncherMotorLeft.burnFlash();
