@@ -32,7 +32,11 @@ public final class Constants {
     public static final double kActionDb_LeftY = 0.1;
   }
 
-
+  public static class TiltAngles {
+    public static final double kFloorAngle = 10.0; // Degrees
+    public static final double kAmpAngle = 60.0; // Degrees
+    public static final double kSpeakerAngle = 100.0; // Degrees
+  }
 
   public static class MotorIDs {
     /** SPARK FLEX CAN IDs for SWERVE DRIVE*/
