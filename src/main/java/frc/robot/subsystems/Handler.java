@@ -152,11 +152,11 @@ public class Handler extends PIDSubsystem {
   }
 
   public boolean atHighRange() {
-    return (getPotAngle() >= (Constants.Handler.kTiltMaxRange - 4.0));
+    return (getPotAngle() >= (Constants.Handler.kTiltMaxAngle - 4.0));
   }
 
   public boolean atLowRange() {
-    return (getPotAngle() <= (Constants.Handler.kTiltZeroAngle + 4.0));
+    return (getPotAngle() <= (Constants.Handler.kTiltMinAngle + 4.0));
   }
 
 
