@@ -153,7 +153,7 @@ public class Launcher extends SubsystemBase {
    */
   public final void stop() {
     // Stop motors from running
-    m_LauncherMotorLeft.stopMotor(); // Right motor follows left's lead
+    m_LauncherMotorLeft.set(0.0); // Right motor follows left's lead
     // m_LauncherMotorRight.stopMotor();
   }
 
