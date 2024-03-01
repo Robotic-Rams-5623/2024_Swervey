@@ -58,6 +58,8 @@ public final class Constants {
   
     /** NOTE HANDLER/TILTER MECHANISM IDs */
     public static final int kTiltMotorCANid = 34;
+
+    public static final int kIntakeMotorCANid = 9;
   }
 
 
@@ -99,11 +101,150 @@ public final class Constants {
 
 
 
+  public static class Climb {
+
+  public static final int kProxLowerDIO = 1;
+  public static final int kProxUpperDIO = 2;
+  
+    /** CLIMB SUBSYSTEM PARAMETERS */
+  public static final double kSpeedUp = 0.7; // Percent Output
+  public static final double kSpeedDown = 0.6; // Percent Output
+
+  // Bottom Hook to About Ground
+  public static final double kResetPosition = 11; // Zero for relative to robot or offset to be relative to floor
+  // Reset position is like 11 inches from the bottom of the frame to the center of the bottom hook.
+
+  /** CLIMB MOTOR CONFIGURATION CONSTANTS */
+  public static final double kClosedRampRate = 2;
+  public static final double kOpenRampRate = 2;
+  public static final int kCurrentLimit = 30;
+  public static final boolean kMotorInverted = true;
+  public static final IdleMode kIdleMode = IdleMode.kBrake;
+
+  /** CLIMB ENCODER CONFIGURATION CONSTANTS */
+  // public static final boolean kEncInverted = false;
+  public static final double kEncVelConversion = 1; // Inch/Sec = RPM * ???
+  // 9 rots of motor : 1 rot of screw. 1 rot  of screw : 1/8 inch height
+  public static final double kEncPosConversion = 1/9; // 72 Motor rot per inch
+
+  /** CLIMB PID CONTROLLER CONSTANTS */
+  public static final double kP = 0.1; // Proportional Constant
+  public static final double kI = 0.0; // Integral Constant
+  public static final double kD = 0.0; // Derivative Constant (LEAVE AT ZERO)
+  public static final double kIz = 0.0; // Integral deadzone (Zero disables the deadzone)
+  public static final double kFF = 0.00; // Feed Forward Gain
+  public static final double kMaxOutput = 0.7; // Percent Output
+  public static final double kMinOutput = -0.6; // Needs to be negative
+  public static final double kMaxRPM = 5600; // Max RPM in Closed Loop Mode
+  }
 
 
+
+  public static class Handler {
+    /** INTAKE SUBSYSTEM PARAMETERS */
+    public static final int kTiltPotAIport = 0;
+  
+    public static final double kTiltMaxRange = 100; // What is the angle at 5 volts of the pot
+    public static final double kTiltZeroAngle = 100; // What is the angle at 0 volts of the pot
+  
+    public static final double kUpSpeed = 0.4;
+    public static final double kDownSpeed = 0.3;
+    
+    // public static final double kSpeedIn = 0.3; // Percent Output
+    // public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)
+  
+    /** TITLER MOTOR CONFIGURATION CONSTANTS */
+    public static final double kClosedRampRate = 0.75;
+    public static final double kOpenRampRate = 0.75;
+    public static final int kCurrentLimit = 30;
+    public static final boolean kMotorInverted = false;
+    public static final IdleMode kIdleMode = IdleMode.kBrake;
+  
+    /** TILTER PID CONTROLLER CONSTANTS */
+    public static final double kP = 0.01; // Proportional Constant
+    public static final double kI = 0; // Integral Constant
+    public static final double kD = 0; // Derivative Constant (LEAVE AT ZERO)
+    public static final double kIz = 0; // Integral deadzone (Zero disables the deadzone)
+    public static final double kFF = 0.001; // Feed Forward Gain
+    public static final double kMaxOutput = 0.6; // Percent Output to Raise the Mechanism
+    public static final double kMinOutput = -0.3; // Negative Percent Output to Lower Mechanism
+    public static final double kMaxRPM = 3000; // Max RPM in Closed Loop Mode
+  
+    public static final double kStatic = 0.1; // Static Feedforward gain
+    public static final double kVel = 0.01; // Velocity feedforward gain
+
+    public static enum handleState {
+      None,
+      High,
+      Low,
+      Intake,
+      Middle
+    }
+  }
 
 
   
+  public static class Launcher{
+    // LAUNCHER MOTOR CONFIGURATION CONSTANTS
+    public static final double kSpeedPushLowRPM = 2500;
+    public static final double kSpeedPushHighRPM = 4000;
+    public static final double kSpeedPull = 0.5;
+    public static final double kSpeedPullFast = 0.8;
+    
+    public static final double kClosedRampRate = .2;
+    public static final double kOpenRampRate = .2;
+    public static final boolean kLeftMotorInverted = false;
+    public static final boolean kRightMotorInverted = true;
+    public static final IdleMode kIdleMode = IdleMode.kCoast;
+    public static final int kCurrentLimit = 30;
+  
+    public static final boolean kEncLeftInverted = false;
+    public static final boolean kEncRightInverted = true;
+    public static final double kEncVelConversion = 1; // RPM = RPM * 1
+    public static final double kEncPosConversion = 1; // There is no position, it's a spinning wheel!
+  
+    /** LAUNCHER PID CONTROLLER CONSTANTS */
+    public static final double kP = 0.01; // Proportional Constant
+    public static final double kI = 0.0; // Integral Constant
+    public static final double kD = 0.0; // Derivative Constant (LEAVE AT ZERO)
+    public static final double kIz = 0.0; // Integral deadzone (Zero disables the deadzone)
+    public static final double kFF = 0.0; // Feed Forward Gain
+    public static final double kMaxOutput = 0.95; // Percent Output
+    public static final double kMinOutput = -0.95; // Needs to be negative
+    public static final double kMaxRPM = 5600; // Max RPM in Closed Loop Mode
+    
+    // NOTE HANDLING AND LAUNCHING STATES FOR *GLOBAL VARIABLE*
+    // public static enum noteState {
+    //   None,
+    //   Loading,
+    //   Loaded,
+    //   FiringLow,
+    //   FiringHigh,
+    //   Override
+    // }
+  }
+
+
+
+  public static class Intake{
+    public static final int kIntakeProxDIport = 0;
+    
+    /** INTAKE SUBSYSTEM PARAMETERS */
+    public static final double kSpeedIn = 0.4; // Percent Output
+    public static final double kSpeedOut = 0.6; // Percent Output
+
+    /** INTAKE MOTOR CONFIGURATION CONSTANTS */
+    public static final double kClosedRampRate = 0.1;
+    public static final double kOpenRampRate = 0.1;
+    public static final int kCurrentLimit = 20;
+    public static final boolean kMotorInverted = false;
+    public static final IdleMode kIdleMode = IdleMode.kBrake;
+  }
+
+
+
+
+
 
 
   
