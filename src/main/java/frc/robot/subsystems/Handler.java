@@ -131,6 +131,10 @@ public class Handler extends PIDSubsystem {
     m_PDH.setSwitchableChannel(false);
   }
 
+
+
+
+  
   /**
    * GET THE ANALOG INPUT POTENTIOMETER VOLTAGE
    * @return voltage of potentiometer in volts
@@ -147,9 +151,20 @@ public class Handler extends PIDSubsystem {
     return m_TiltAngle.get();
   }
 
+  public boolean atHighRange() {
+    return (getPotAngle() >= (Constants.Handler.kTiltMaxRange - 4.0));
+  }
+
+  public boolean atLowRange() {
+    return (getPotAngle() <= (Constants.Handler.kTiltZeroAngle + 4.0));
+  }
+
+
+  
+
+  
   /**
    * MANUALLY MOVE THE TILT UPWARDS
-   * 
    */
   public void manualUp() {
     m_TiltMotor.set(Constants.Handler.kUpSpeed);
@@ -157,10 +172,16 @@ public class Handler extends PIDSubsystem {
 
   /**
    * MANUALLY MOVE THE TILT DOWNWARDS
-   * 
    */
   public void manualDown() {
     m_TiltMotor.set(-Constants.Handler.kDownSpeed); // Needs to be negative
+  }
+
+  /**
+   * MANUAL VARIED SPEED
+   */
+  public void manualTilt(DoubleSupplier speed) {
+    m_TiltMotor.set(-Math.pow(speed.getAsDouble(), 3) * Constants.Handler.kManualSpeedLimit); // Smooth out controls and reduce mangitude of speed
   }
 
   /**
@@ -168,7 +189,7 @@ public class Handler extends PIDSubsystem {
    * 
    */
   public void stop() {
-    m_TiltMotor.stopMotor();
+    m_TiltMotor.set(0.0);
   }
 
   @Override
@@ -176,5 +197,7 @@ public class Handler extends PIDSubsystem {
     // Slap some smartdashboard stuff in here
     SmartDashboard.putNumber("Pot Raw Voltage", getPotVoltage());
     SmartDashboard.putNumber("Pot Angle (Deg)", getPotAngle());
+    SmartDashboard.putBoolean("Tilt Up Limit", atHighRange());
+    SmartDashboard.putBoolean("Tilt Down Limit", atLowRange());
   }
 }
