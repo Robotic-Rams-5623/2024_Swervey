@@ -147,7 +147,9 @@ public final class Constants {
     public static final int kTiltPotAIport = 0;
   
     public static final double kTiltMaxRange = 100; // What is the angle at 5 volts of the pot
-    public static final double kTiltZeroAngle = 100; // What is the angle at 0 volts of the pot
+    public static final double kTiltZeroAngle = 0; // What is the angle at 0 volts of the pot
+    public static final double kTiltMaxAngle = 120;
+    public static final double kTiltMinAngle = 20;
   
     public static final double kUpSpeed = 0.4;
     public static final double kDownSpeed = 0.3;
