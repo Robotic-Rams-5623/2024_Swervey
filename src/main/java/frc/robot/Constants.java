@@ -28,7 +28,8 @@ public final class Constants {
     public static final double TURN_CONSTANT = 7;
     
     public static final int kActionUSBPort = 1;
-    public static final double kActionDeadband = 0.05;
+    public static final double kActionDeadband = 0.1;
+    public static final double kActionDb_LeftY = 0.1;
   }
 
 
