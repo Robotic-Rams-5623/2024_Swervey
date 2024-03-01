@@ -144,7 +144,7 @@ public class Climb extends SubsystemBase {
    * @param position (inches relative to robot or ground?)
    */
   public final void setPosition(double position) {
-    m_ClimbPIDController.setReference(position, ControlType.kPosition);
+    m_ClimbPIDController.setReference(position * 16 / 1072, ControlType.kPosition);
   }
 
   /** 
@@ -171,7 +171,7 @@ public class Climb extends SubsystemBase {
    * @return motor position
    */
   public final double getPosition() {
-    return m_ClimbEncoder.getPosition();
+    return m_ClimbEncoder.getPosition() * 16 / 1072;
   }
 
   /**

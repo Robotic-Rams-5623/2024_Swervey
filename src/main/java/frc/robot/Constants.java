@@ -126,10 +126,10 @@ public final class Constants {
   // public static final boolean kEncInverted = false;
   public static final double kEncVelConversion = 1; // Inch/Sec = RPM * ???
   // 9 rots of motor : 1 rot of screw. 1 rot  of screw : 1/8 inch height
-  public static final double kEncPosConversion = 1/9; // 72 Motor rot per inch
+  public static final double kEncPosConversion = 1/1072; // 72 Motor rot per inch
 
   /** CLIMB PID CONTROLLER CONSTANTS */
-  public static final double kP = 0.1; // Proportional Constant
+  public static final double kP = 0.06; // Proportional Constant
   public static final double kI = 0.0; // Integral Constant
   public static final double kD = 0.0; // Derivative Constant (LEAVE AT ZERO)
   public static final double kIz = 0.0; // Integral deadzone (Zero disables the deadzone)
