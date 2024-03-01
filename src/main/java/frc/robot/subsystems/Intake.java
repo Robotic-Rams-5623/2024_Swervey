@@ -92,6 +92,13 @@ public class Intake extends SubsystemBase {
     return m_NoteProx.get();
   }
 
+  public double getVelocity() {
+    return m_IntakeMotor.getVelocity();
+  }
+
+  public boolean isMoving() {
+    return (getVelocity() > 20);
+  }
 
 
 
@@ -99,5 +106,6 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putBoolean("Note In Robot", getNoteProx());
+    SmartDashboard.putBoolean("Intake Moving", isMoving());
   }
 }
