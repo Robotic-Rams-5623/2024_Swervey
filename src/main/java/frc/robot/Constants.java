@@ -109,6 +109,7 @@ public final class Constants {
     /** CLIMB SUBSYSTEM PARAMETERS */
   public static final double kSpeedUp = 0.7; // Percent Output
   public static final double kSpeedDown = 0.6; // Percent Output
+  public static final double kChainHeight = 21;
 
   // Bottom Hook to About Ground
   public static final double kResetPosition = 11; // Zero for relative to robot or offset to be relative to floor
