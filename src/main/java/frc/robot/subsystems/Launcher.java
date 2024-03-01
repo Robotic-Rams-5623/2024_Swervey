@@ -191,7 +191,7 @@ public class Launcher extends SubsystemBase {
    * 
    * @param speed of the motor in RPM to set the setpoint of the PID controller to.
    */
-  public final void setLaunchRPM (double speed) {
+  public final void setLaunchRPM(double speed) {
     m_LauncherPIDController.setReference(speed, CANSparkMax.ControlType.kVelocity); // Right motor follows left's lead
     // m_LauncherMotorRight.setReference(speed, CANSparkMax.ControlType.kVelocity);
   }
@@ -205,7 +205,7 @@ public class Launcher extends SubsystemBase {
    *
    * @param speed of the motor in percent output
    */
-  public final void launch (double speed) {
+  public final void launch(double speed) {
     m_LauncherMotorLeft.set(speed); // Right motor follows left's lead
     // m_LauncherMotorRight.set(speed);
   }
