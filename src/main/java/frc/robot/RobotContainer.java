@@ -28,20 +28,29 @@ import java.io.File;
 public class RobotContainer {
   /* ROBOT SUBSYSTEM DEFINITIONS */
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),"swerve/neo"));
-  final Climb climb = new Climb();
+  private final Climb climb = new Climb();
   private final Handler tilt = new Handler();
-  // private final Launcher m_launch = new Launcher();
+  private final Launcher launch = new Launcher();
   private final Intake intake = new Intake();
-  // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
   /* SET DRIVER CONTROLLER OBJECTS */
-  final CommandXboxController driverXbox = new CommandXboxController(OperatorConstants.kDriverUSBPort);
-  final CommandXboxController m_actionXbox = new CommandXboxController(OperatorConstants.kActionUSBPort);
+  private final CommandXboxController driverXbox = new CommandXboxController(OperatorConstants.kDriverUSBPort);
+  private final CommandXboxController m_actionXbox = new CommandXboxController(OperatorConstants.kActionUSBPort);
+
+  /* ARBITRARY TRIGGERS */
+  private final Trigger climbResetTrigger = new Trigger(climb::getLowerProx);
+  private final Trigger climbTopTrigger = new Trigger(climb::getHigherProx);
+  private final Trigger intakeNoteTrigger = new Trigger(intake::getNoteProx);
+  private final Trigger intakeMovingTrigger = new Trigger(intake::isMoving);
+  // private final Trigger tiltHighLimitTrigger = new Trigger(tilt::atHighRage);
+  // private final Trigger tiltLowLimitTrigger = new Trigger(tilt::atLowRage);
 
 
   
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    tilt.disable();
+    
     /* CONFIGURE PRE-DEFINED COMMANDS */
 
     /* Applies deadbands and inverts controls because joysticks are
@@ -75,7 +84,7 @@ public class RobotContainer {
      * back right positive while robot controls are fonrt-left positive.
      * LEFT STICK controls translation
      * RIGHT STICK controls angular velocity of robot
-     */
+     */ // JONAH PREFERS THIS DRIVING METHOD
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.kDriverDb_LeftY),
         () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.kDriverDb_LeftX),
@@ -105,11 +114,13 @@ public class RobotContainer {
     // If wanting to run in simulation mode (might not be setup), swap which line is commented.
     //drivebase.setDefaultCommand(!RobotBase.isSimulation() ? driveFieldOrientedDirectAngle : driveFieldOrientedDirectAngleSim);
     // drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
-
     /* Example Subsystem Default Command */
     // m_exampleSubsystem.setDefaultCommand(new ExampleCommand(m_exampleSubsystem));
-
+    // intake.setDefaultCommand(new InstantCommand(intake::Stop, intake));
     // climb.setDefaultCommand(new InstantCommand(climb::Stop, climb));
+    Command tiltManual = tilt.adjustTilt(
+      () -> MathUtil.applyDeadband(m_actionXbox.getLeftY(), OperatorConstants.kActionDb_LeftY)
+    );
   }
 
 
@@ -120,87 +131,199 @@ public class RobotContainer {
    * presses, events that occur, or even limit switches on the robot.
    */
   private void configureDriveBindings() {
-    /* Reset Gyro Angle Manually */
-    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    /* Y Button - Reset Gyro Angle Manually */
+    driverXbox.y()
+        .debounce(0.1, Debouncer.DebounceType.kBoth)                    // Prevents rapid repeated triggering
+        .onTrue(Commands.runOnce(drivebase::zeroGyro, drivebase));                 // When button changes from false to true, trigger command once.
     
-    /* Manually Add a Fake Vision Reading??? or lock the wheels into defense mode */
-    driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
-    // driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-
-    /* DRIVE TO A SPECIFIC POSITION AT AN ANGLE OF ZERO */
-    driverXbox.b().whileTrue(
-        Commands.deferredProxy(() -> drivebase.driveToPose(
-                                   new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)))
-                              ));
+    /* X Button - Lock Wheels in X-Mode */
+    driverXbox.x()
+          .debounce(0.1, Debouncer.DebounceType.kBoth)    // Prevents rapid repeated triggering
+          .whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());  // Will keep wheels in locked position so long as the button is held.
+                     
+    /* CLIMB CONTROLS */
+    /* Left Bumber - Climber Column Down */
+    driverXbox.leftBumper().and(driverXbox.a().negate())
+        .debounce(0.5, Debouncer.DebounceType.kBoth)                           // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.run(climb::Down, climb)                                    // Run climber column down
+                  .until(climbResetTrigger)                                   // Until while true ends or if the switch is hit.
+                  .andThen(Commands.runOnce(climb::Stop, climb))              // Stop the climb motor
+                  .finallyDo(Commands.runOnce(climb::resetPosition, climb))   // Finally reset the position to "zero" after the command ends.
+        );
+    /* Left Bumber & A Button - Climber Column Down (No Limits) */
+    driverXbox.leftBumper().and(driverXbox.a())
+        .debounce(0.5, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.run(climb::Down, climb)                            // Run climber down
+                  .finallyDo(Commands.runOnce(climb::stop, climb))    // Stop climber after interrupted
+        );
+    /* Right Bumber - Climber Column Up */
+    driverXbox.rightBumper().and(driverXbox.a().negate())
+        .debounce(0.5, Debouncer.DebounceType.kBoth)                // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.run(climb::Up, climb)                            // Run climber column up
+                  .until(climbTopTrigger)                           // Until while true ends or if the switch is hit.
+                  .andThen(Commands.runOnce(climb::Stop, climb))    // Stop the climb motor
+        );
+    /* Right Bumber & A Button - Climber Column Up (No Limits) */
+    driverXbox.rightBumper().and(driverXbox.a())
+        .debounce(0.5, Debouncer.DebounceType.kBoth)               // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.run(climb::Up, climb)                           // Run climber up
+                  .finallyDo(Commands.runOnce(climb::stop, climb)) // Stop climber after interrupted
+        );
     
+    // driverXbox.rightBumper().whileTrue(new StartEndCommand(
+    //   climb::Up,
+    //   climb::Stop,
+    //   climb
+    // ));
 
+    // driverXbox.rightBumper().whileTrue(new StartEndCommand(
+    //   climb::Down,
+    //   climb::Stop,
+    //   climb
+    // ));
   }
 
   private void configureActionBindings() {
-    /** CLIMB BUTTONS */
-    m_actionXbox.povCenter().onTrue(
-      new InstantCommand(
-        climb::Stop,
-        climb
-    ));
-
-    m_actionXbox.povUp().onTrue( // UP
-      new InstantCommand(
-        climb::Up,
-        climb
-    ));
-
-    m_actionXbox.povDown().onTrue( // DOWN
-      new InstantCommand(
-        climb::Down,
-        climb
-    ));
-
-    m_actionXbox.povRight().onTrue( // Up to position
-      new InstantCommand(
-        () -> climb.setPosition(Constants.Climb.kChainHeight),
-        climb
-      ).withTimeout(30.0));
-
-    m_actionXbox.povLeft().onTrue( // Down to zero
-      new InstantCommand(
-        () -> climb.setPosition(11.0),
-        climb
-      ));
-
-    Trigger climbResetTrigger = new Trigger(climb::getLowerProx);
-    climbResetTrigger.onTrue(new InstantCommand(climb::resetPosition, climb));
-
-    Trigger climbStopTrigger = new Trigger(climb::getHigherProx);
-    climbStopTrigger.onTrue(new InstantCommand(climb::Stop, climb));
-
     /** INTAKE BUTTONS */
-    // m_actionXbox.b().whileTrue(
-      
-    //   new  (
-    //     () -> intake.In(m_actionXbox.back().getAsBoolean()),
+    /* B Button - Intake Spinning Inwards */
+    m_actionXbox.b().and(m_actionXbox.start().negate())               // When X is pressed but Start is not pressed
+        .debounce(0.2, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.run(intake::In, intake)                            // Run the intake inwards until let go or switch is triggered
+                  .until(intakeNoteTrigger)                           // Keeps moving until while true ends or if the switch is hit.
+                  .andThen(new WaitCommand(1.0))                      // Delay the stopping of the intake so the note can get in the robot
+                  .finallyDo(Commands.runOnce(intake::Stop, intake))  // Stop the intake after the command ends.
+        );
+    // OR use this where the intake wheel moving will trigger the command to bring the note in
+    // intakeMovingTrigger.debounce(1.0, Debouncer.DebounceType.kBoth)
+    //     .onTrue(
+    //       Commands.run(intake::In, intake)                            // Run the intake wheel inwards towards the robot
+    //               .onlyIf(intakeNoteTrigger.negate())                 // Only run if the note prox switch is not (negate) triggered
+    //               .until(intakeNoteTrigger)                           // Run until the note prox switch is triggered
+    //               .andThen(new WaitCommand(0.5))                      // Wait 1/2 second so the note has time to get in the robot
+    //               .andThen(Commands.runOnce(intake::Stop))            // Stop the intake after the command ends.
+    //     );
+    
+    /* B & Start Buttons - Intake Spinning Inwards (No Limits) */
+    m_actionXbox.b().and(m_actionXbox.start())                        // When X and Start are both pressed
+        .debounce(0.2, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.run(intake::In, intake)                            // Run the intake inwards until let go or switch is triggered
+                  .finallyDo(Commands.runOnce(intake::Stop, intake))  // Stop the intake after the command ends.
+        );
+    /* Y Button - Intake Spinning Outwards */
+    m_actionXbox.y()                                                  // When Y is pressed
+        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.run(intake::Out, intake)                           // Run the intake inwards until let go or switch is triggered
+                  .finallyDo(Commands.runOnce(intake::Stop, intake))  // Stop the intake after the command ends.
+        );
+    // m_actionXbox.b().whileTrue(new runIntake(intake)).onFalse(new InstantCommand(intake::Stop, intake));
+    // m_actionXbox.start().whileTrue(
+    //   new InstantCommand(
+    //     intake::Out,
     //     intake
     //   ));
-    m_actionXbox.b().whileTrue(new runIntake(intake)).onFalse(new InstantCommand(intake::Stop, intake));
-
-    m_actionXbox.start().whileTrue(
-      new InstantCommand(
-        intake::Out,
-        intake
-      ));
 
     /** HANDLE BINDINGS */
-    m_actionXbox.rightBumper().whileTrue(
-      new InstantCommand(
-        tilt::manualUp,
-        tilt
-      ).andThen(new InstantCommand(tilt::stop, tilt)));
+    /* POV Center - Tilter Stops Moving */
+    // Bad idea since it will stop the tilter PID from finishing
 
-    m_actionXbox.leftBumper().whileTrue(
-      new InstantCommand(
-        tilt::manualDown,
-        tilt
-      ).andThen(new InstantCommand(tilt::stop, tilt)));
+    /* POV Up - Tilter Move to Speaker Position */
+    m_actionXbox.povUp()
+        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .onTrue(
+          Commands.sequence(
+                    Commands.runOnce(() -> {tilt.setSetpoint(Constants.TiltAngles.kSpeakerAngle);}, tilt),
+                    Commands.runOnce(() -> {tilt.enable();}, tilt))
+                  .withTimeout(10.0)
+                  .andThen(Commands.sequence(
+                    Commands.runOnce(() -> {tilt.disable();}, tilt),
+                    Commands.runOnce(tilt::stop, tilt)))
+        );
+    
+    /* POV Right - Tilter Move to Amp Position */
+    m_actionXbox.povRight()
+        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .onTrue(
+          Commands.sequence(
+                    Commands.runOnce(() -> {tilt.setSetpoint(Constants.TiltAngles.kAmpAngle);}, tilt),
+                    Commands.runOnce(() -> {tilt.enable();}, tilt))
+                  .withTimeout(10.0)
+                  .andThen(Commands.sequence(
+                    Commands.runOnce(() -> {tilt.disable();}, tilt),
+                    Commands.runOnce(tilt::stop, tilt)))
+        );
+    
+    /* POV Down - Tilter Move to Floor Position */
+    m_actionXbox.povDown()
+        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .onTrue(
+          Commands.sequence(
+                    Commands.runOnce(() -> {tilt.setSetpoint(Constants.TiltAngles.kFloorAngle);}, tilt),
+                    Commands.runOnce(() -> {tilt.enable();}, tilt))
+                  .withTimeout(10.0)
+                  .andThen(Commands.sequence(
+                    Commands.runOnce(() -> {tilt.disable();}, tilt),
+                    Commands.runOnce(tilt::stop, tilt)))
+        );
+
+    /** LAUNCHER BINDINGS */
+    /* Select Button - Manual Feed Solenoid */
+    m_actionXbox.select()  // When Select is pressed
+        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .onTrue(
+          Commands.sequence(
+            Commands.runOnce(tilt::feedExtend, tilt),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(tilt::feedRetract, tilt))
+        );
+    
+    /* X Button - Manual Launcher Spin Up */
+    m_actionXbox.x().and(m_actionXbox.start().negate())  // When X is pressed ans Start is not
+        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.startEnd(
+            () -> launch.launch(0.8),
+            launch::stop,
+            launch
+          )
+        );
+    
+    /* X & Start Buttons - Manual Launcher Spin Reverse */
+    m_actionXbox.x().and(m_actionXbox.start())  // When X and Start are both pressed
+        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .whileTrue(
+          Commands.startEnd(
+            () -> launch.launch(-0.5),
+            launch::stop,
+            launch
+          )
+        );
+    
+    /* A Button - Launching Sequence */
+    m_actionXbox.a()
+        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+        .onTrue(
+          Commands.sequence(
+            Commands.runOnce(() -> launch.load(0.6), launch),              // Move note away from launch wheels
+            Commands.waitSeconds(0.4),                                     // Hold condition for 0.4 seconds
+            Commands.runOnce(launch::stop, launch),                        // Stop launch wheels
+            Commands.waitSeconds(0.2),                                     // Hold condition for 0.2 seconds
+            Commands.parallel(
+              Commands.runOnce(() -> launch.setLaunchRPM(4000), launch),   // Set RPM PID to 4000 RPM
+              Commands.runOnce(tilt::feedExtend, tilt)                     // Feed note into launcher after 2.0 seconds of warm up
+                      .beforeStarting(Commands.waitSeconds(2.0))),
+            Commands.parallel(
+              Commands.runOnce(launch::stop, launch),                      // Turn everything off
+              Commands.runOnce(tilt::feedRetract, tilt))
+          )
+        );
+    
   }
 
 
