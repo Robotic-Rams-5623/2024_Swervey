@@ -151,6 +151,7 @@ public final class Constants {
   
     public static final double kUpSpeed = 0.4;
     public static final double kDownSpeed = 0.3;
+    public static final double kManualSpeedLimit = 0.75;
     
     // public static final double kSpeedIn = 0.3; // Percent Output
     // public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)
