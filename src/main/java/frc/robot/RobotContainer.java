@@ -3,13 +3,16 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 
 import frc.robot.commands.Autos;
-import frc.robot.commands.runIntake;
 import frc.robot.commands.drivebase.AbsoluteDriveAdv;
+
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Handler;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Launcher;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -19,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -41,7 +45,7 @@ public class RobotContainer {
   private final Trigger climbResetTrigger = new Trigger(climb::getLowerProx);
   private final Trigger climbTopTrigger = new Trigger(climb::getHigherProx);
   private final Trigger intakeNoteTrigger = new Trigger(intake::getNoteProx);
-  private final Trigger intakeMovingTrigger = new Trigger(intake::isMoving);
+  // private final Trigger intakeMovingTrigger = new Trigger(intake::isMoving);
   // private final Trigger tiltHighLimitTrigger = new Trigger(tilt::atHighRage);
   // private final Trigger tiltLowLimitTrigger = new Trigger(tilt::atLowRage);
 
@@ -118,9 +122,10 @@ public class RobotContainer {
     // m_exampleSubsystem.setDefaultCommand(new ExampleCommand(m_exampleSubsystem));
     // intake.setDefaultCommand(new InstantCommand(intake::Stop, intake));
     // climb.setDefaultCommand(new InstantCommand(climb::Stop, climb));
-    Command tiltManual = tilt.adjustTilt(
-      () -> MathUtil.applyDeadband(m_actionXbox.getLeftY(), OperatorConstants.kActionDb_LeftY)
-    );
+
+    tilt.setDefaultCommand(new RunCommand(
+      () -> MathUtil.applyDeadband(m_actionXbox.getLeftY(), OperatorConstants.kActionDb_LeftY),
+      tilt));
   }
 
 
@@ -146,17 +151,19 @@ public class RobotContainer {
     driverXbox.leftBumper().and(driverXbox.a().negate())
         .debounce(0.5, Debouncer.DebounceType.kBoth)                           // Prevents rapid repeated triggering
         .whileTrue(
-          Commands.run(climb::Down, climb)                                    // Run climber column down
-                  .until(climbResetTrigger)                                   // Until while true ends or if the switch is hit.
-                  .andThen(Commands.runOnce(climb::Stop, climb))              // Stop the climb motor
-                  .finallyDo(Commands.runOnce(climb::resetPosition, climb))   // Finally reset the position to "zero" after the command ends.
+          Commands.sequence(
+            Commands.run(climb::Down, climb)                                   // Run climber column down
+                    .until(climbResetTrigger)                                  // Until while true ends or if the switch is hit.
+                    .andThen(Commands.runOnce(climb::Stop, climb)),            // Stop the climb motor
+                    Commands.runOnce(climb::resetPosition, climb))             // Finally reset the position to "zero" after the command ends.
+                  
         );
     /* Left Bumber & A Button - Climber Column Down (No Limits) */
     driverXbox.leftBumper().and(driverXbox.a())
         .debounce(0.5, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
         .whileTrue(
           Commands.run(climb::Down, climb)                            // Run climber down
-                  .finallyDo(Commands.runOnce(climb::stop, climb))    // Stop climber after interrupted
+                  .andThen(Commands.runOnce(climb::Stop, climb))    // Stop climber after interrupted
         );
     /* Right Bumber - Climber Column Up */
     driverXbox.rightBumper().and(driverXbox.a().negate())
@@ -171,7 +178,7 @@ public class RobotContainer {
         .debounce(0.5, Debouncer.DebounceType.kBoth)               // Prevents rapid repeated triggering
         .whileTrue(
           Commands.run(climb::Up, climb)                           // Run climber up
-                  .finallyDo(Commands.runOnce(climb::stop, climb)) // Stop climber after interrupted
+                  .andThen(Commands.runOnce(climb::Stop, climb)) // Stop climber after interrupted
         );
     
     // driverXbox.rightBumper().whileTrue(new StartEndCommand(
@@ -193,10 +200,11 @@ public class RobotContainer {
     m_actionXbox.b().and(m_actionXbox.start().negate())               // When X is pressed but Start is not pressed
         .debounce(0.2, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
         .whileTrue(
-          Commands.run(intake::In, intake)                            // Run the intake inwards until let go or switch is triggered
-                  .until(intakeNoteTrigger)                           // Keeps moving until while true ends or if the switch is hit.
-                  .andThen(new WaitCommand(1.0))                      // Delay the stopping of the intake so the note can get in the robot
-                  .finallyDo(Commands.runOnce(intake::Stop, intake))  // Stop the intake after the command ends.
+          Commands.sequence(
+            Commands.run(intake::In, intake)                            // Run the intake inwards until let go or switch is triggered
+                    .until(intakeNoteTrigger)                           // Keeps moving until while true ends or if the switch is hit.
+                    .andThen(new WaitCommand(1.0)),             // Delay the stopping of the intake so the note can get in the robot
+            Commands.runOnce(intake::Stop, intake))                     // Stop the intake after the command ends.
         );
     // OR use this where the intake wheel moving will trigger the command to bring the note in
     // intakeMovingTrigger.debounce(1.0, Debouncer.DebounceType.kBoth)
@@ -213,14 +221,14 @@ public class RobotContainer {
         .debounce(0.2, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
         .whileTrue(
           Commands.run(intake::In, intake)                            // Run the intake inwards until let go or switch is triggered
-                  .finallyDo(Commands.runOnce(intake::Stop, intake))  // Stop the intake after the command ends.
+                  .andThen(Commands.runOnce(intake::Stop, intake))  // Stop the intake after the command ends.
         );
     /* Y Button - Intake Spinning Outwards */
     m_actionXbox.y()                                                  // When Y is pressed
         .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
         .whileTrue(
           Commands.run(intake::Out, intake)                           // Run the intake inwards until let go or switch is triggered
-                  .finallyDo(Commands.runOnce(intake::Stop, intake))  // Stop the intake after the command ends.
+                  .andThen(Commands.runOnce(intake::Stop, intake))  // Stop the intake after the command ends.
         );
     // m_actionXbox.b().whileTrue(new runIntake(intake)).onFalse(new InstantCommand(intake::Stop, intake));
     // m_actionXbox.start().whileTrue(
@@ -274,7 +282,7 @@ public class RobotContainer {
 
     /** LAUNCHER BINDINGS */
     /* Select Button - Manual Feed Solenoid */
-    m_actionXbox.select()  // When Select is pressed
+    m_actionXbox.back()  // When Select is pressed
         .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
         .onTrue(
           Commands.sequence(
