@@ -11,6 +11,7 @@ import java.util.function.DoubleSupplier;
 
 import com.revrobotics.CANSparkMax;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 // import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.AnalogInput;
@@ -18,8 +19,10 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import frc.robot.Constants;
+import frc.robot.Constants.OperatorConstants;
 
 public class Handler extends PIDSubsystem {
   /* Create the motor for tilting the handling mechanism */
@@ -154,11 +157,11 @@ public class Handler extends PIDSubsystem {
   }
 
   public boolean atHighRange() {
-    return (getPotAngle() >= (Constants.Handler.kTiltMaxAngle - 4.0));
+    return (getPotAngle() >= (Constants.Handler.kTiltMaxAngle - 10.0));
   }
 
   public boolean atLowRange() {
-    return (getPotAngle() <= (Constants.Handler.kTiltMinAngle + 4.0));
+    return (getPotAngle() <= (Constants.Handler.kTiltMinAngle + 5.0));
   }
 
 
@@ -169,21 +172,36 @@ public class Handler extends PIDSubsystem {
    * MANUALLY MOVE THE TILT UPWARDS
    */
   public void manualUp() {
-    m_TiltMotor.set(Constants.Handler.kUpSpeed);
+    double speed = 0;
+    if (atHighRange()) {
+      speed = 0.0;
+    } else {
+      speed = Constants.Handler.kUpSpeed;
+    }
+    m_TiltMotor.set(speed);
   }
 
   /**
    * MANUALLY MOVE THE TILT DOWNWARDS
    */
   public void manualDown() {
-    m_TiltMotor.set(-Constants.Handler.kDownSpeed); // Needs to be negative
+    double speed = 0;
+    if (atLowRange()) {
+      speed = 0.0;
+    } else {
+      speed = Constants.Handler.kDownSpeed;
+    }
+    m_TiltMotor.set(-speed);
   }
 
   /**
    * MANUAL VARIED SPEED
    */
-  public void manualTilt(DoubleSupplier speed) {
-    m_TiltMotor.set(-Math.pow(speed.getAsDouble(), 3) * Constants.Handler.kManualSpeedLimit); // Smooth out controls and reduce mangitude of speed
+  public Command manualTilt(DoubleSupplier speed) {
+    return run(() -> {
+      double input = MathUtil.applyDeadband(speed.getAsDouble(), OperatorConstants.kDriverDb_LeftY);
+      m_TiltMotor.set(-Math.pow(input, 3) * Constants.Handler.kManualSpeedLimit);
+    });
   }
 
   /**

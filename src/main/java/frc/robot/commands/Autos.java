@@ -22,41 +22,39 @@ public final class Autos {
   // }
 
   /** LAUNCH NOTE INTO SPEAKER **/
-  public static Command noteSpeaker(Launcher launch, Handler tilt) {
-    return Commands.sequence(
-              Commands.sequence(
-                  Commands.runOnce(() -> {tilt.setSetpoint(Constants.TiltAngles.kSpeakerAngle);}, tilt),
-                  Commands.runOnce(() -> {tilt.enable();}, tilt))
-              .withTimeout(10.0)
-              .andThen(Commands.sequence(
-                          Commands.runOnce(() -> {tilt.disable();}, tilt),
-                          Commands.runOnce(tilt::stop, tilt)),
-              Commands.sequence(
-                Commands.runOnce(() -> launch.load(0.6), launch),              // Move note away from launch wheels
-                Commands.waitSeconds(0.4),                                     // Hold condition for 0.4 seconds
-                Commands.runOnce(launch::stop, launch),                        // Stop launch wheels
-                Commands.waitSeconds(0.2),                                     // Hold condition for 0.2 seconds
-                Commands.parallel(
-                  Commands.runOnce(() -> launch.setLaunchRPM(4000), launch),   // Set RPM PID to 4000 RPM
-                  Commands.runOnce(tilt::feedExtend, tilt)                     // Feed note into launcher after 2.0 seconds of warm up
-                          .beforeStarting(Commands.waitSeconds(2.0))),
-                Commands.parallel(
-                  Commands.runOnce(launch::stop, launch),                      // Turn everything off
-                  Commands.runOnce(tilt::feedRetract, tilt))
-            )));
-  }
+  // public static Command noteSpeaker(Launcher launch, Handler tilt) {
+  //   return Commands.sequence(
+  //             Commands.sequence(
+  //                 Commands.runOnce(() -> {tilt.setSetpoint(Constants.TiltAngles.kSpeakerAngle);}, tilt),
+  //                 Commands.runOnce(() -> {tilt.enable();}, tilt))
+  //             .withTimeout(10.0)
+  //             .andThen(Commands.sequence(
+  //                         Commands.runOnce(() -> {tilt.disable();}, tilt),
+  //                         Commands.runOnce(tilt::stop, tilt)),
+  //             Commands.sequence(
+  //               Commands.runOnce(() -> launch.load(0.6), launch),              // Move note away from launch wheels
+  //               Commands.waitSeconds(0.4),                                     // Hold condition for 0.4 seconds
+  //               Commands.runOnce(launch::stop, launch),                        // Stop launch wheels
+  //               Commands.waitSeconds(0.2),                                     // Hold condition for 0.2 seconds
+  //               Commands.parallel(
+  //                 Commands.runOnce(() -> launch.setLaunchRPM(4000), launch),   // Set RPM PID to 4000 RPM
+  //                 Commands.runOnce(tilt::feedExtend, tilt)                     // Feed note into launcher after 2.0 seconds of warm up
+  //                         .beforeStarting(Commands.waitSeconds(2.0))),
+  //               Commands.parallel(
+  //                 Commands.runOnce(launch::stop, launch),                      // Turn everything off
+  //                 Commands.runOnce(tilt::feedRetract, tilt))
+  //           )));
+  // }
 
   /** DRIVE ACCROSS THE LINE **/
-  public static Command driveLine(SwerveSubsystem drivebase) {
-    return Commands.sequence(
-      Commands.runOnce(drivebase::zeroGyro, drivebase),
-      Commands.waitSeconds(2.0),
-      new RunCommand(() -> drivebase.driveCommand(() -> 0.4, () -> 0.0, () -> 0.0), drivebase)
-        .withTimeout(4.0),
-      new RunCommand(
-        () -> drivebase.driveCommand(() -> 0.0, () -> 0.0, () -> 0.0), drivebase), null)
-    ;
-  }
+  // public static Command driveLine(SwerveSubsystem drivebase) {
+  //   return Commands.sequence(
+  //     Commands.runOnce(drivebase::zeroGyro, drivebase).withTimeout(1.0),
+  //     Commands.waitSeconds(2.0),
+  //     new RunCommand(() -> drivebase.driveCommand(() -> 0.4, () -> 0.0, () -> 0.0), drivebase)
+  //       .withTimeout(5.0),
+  //     new RunCommand(() -> drivebase.driveCommand(() -> 0.0, () -> 0.0, () -> 0.0), drivebase).withTimeout(1.0));
+  // }
 
   // public Command driveFieldOrientedAnglularVelocity = SwerveSubsystem.driveCommand(
   //   () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.kDriverDb_LeftY),
@@ -66,7 +64,7 @@ public final class Autos {
   //   throw new UnsupportedOperationException("This is a utility class!");
   // }
 
-  public Command none() {
+  public static Command none() {
     return Commands.none();
   }
 }

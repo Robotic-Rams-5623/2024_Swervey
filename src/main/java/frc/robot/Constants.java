@@ -25,7 +25,7 @@ public final class Constants {
     public static final double kDriverDb_LeftX = 0.1;
     public static final double kDriverDb_LeftY = 0.1;
     public static final double kDriverDb_RightX = 0.1;
-    public static final double TURN_CONSTANT = 7;
+    public static final double TURN_CONSTANT = 7.5;
     
     public static final int kActionUSBPort = 1;
     public static final double kActionDeadband = 0.1;
@@ -33,7 +33,7 @@ public final class Constants {
   }
 
   public static class TiltAngles {
-    public static final double kFloorAngle = 10.0; // Degrees
+    public static final double kFloorAngle = 0.0; // Degrees
     public static final double kAmpAngle = 60.0; // Degrees
     public static final double kSpeakerAngle = 100.0; // Degrees
   }
@@ -64,7 +64,7 @@ public final class Constants {
     /** NOTE HANDLER/TILTER MECHANISM IDs */
     public static final int kTiltMotorCANid = 34;
 
-    public static final int kIntakeMotorCANid = 9;
+    public static final int kIntakeMotorCANid = 10;
   }
 
 
@@ -74,9 +74,9 @@ public final class Constants {
     // Distance between the centers of the front and back wheels on the robot
     public static final double kTrackWidth = Units.inchesToMeters(24.25); // [Meter]
     // Robot Mass (Weight - gravity)
-    public static final double ROBOT_MASS = 54.3; // [Kg]
+    public static final double ROBOT_MASS = 43.0; // [Kg]
     public static final Matter CHASSIS = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
-    public static final double LOOP_TIME = 0.13; // 20ms loop time + .113 spark amx lag time
+    public static final double LOOP_TIME = 0.133; // 20ms loop time + .113 spark amx lag time
     
     // Wheel dimensions
     public static final double kWheelDiameterMeters = Units.inchesToMeters(4.0); // [Meter]
@@ -87,7 +87,7 @@ public final class Constants {
     public static final double kTurnMotorReduction = 12.8; // SDS MK4 Module Turn Gear Ratio
   
     // Max speed of the robot in feet per seconds
-    public static final double kMaxDriveFeetPerSec = 14.5; // [Feet/Sec]
+    public static final double kMaxDriveFeetPerSec = 9.0; // [Feet/Sec]
   }
 
 
@@ -97,7 +97,7 @@ public final class Constants {
    */
   public static final class AutonConstants {
     public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.7, 0, 0);
-    public static final PIDConstants ANGLE_PID   = new PIDConstants(0.4, 0, 0.01);
+    public static final PIDConstants ANGLE_PID   = new PIDConstants(0.5, 0, 0);
   }
   public static final class DrivebaseConstants {
     // Hold time on motor brakes when disabled
@@ -112,18 +112,18 @@ public final class Constants {
   public static final int kProxUpperDIO = 2;
   
     /** CLIMB SUBSYSTEM PARAMETERS */
-  public static final double kSpeedUp = 0.7; // Percent Output
-  public static final double kSpeedDown = 0.6; // Percent Output
-  public static final double kChainHeight = 21;
+  public static final double kSpeedUp = 0.9; // Percent Output
+  public static final double kSpeedDown = 0.9; // Percent Output
+  public static final double kChainHeight = 24.5;
 
   // Bottom Hook to About Ground
-  public static final double kResetPosition = 11; // Zero for relative to robot or offset to be relative to floor
+  public static final double kResetPosition = 15.5; // Zero for relative to robot or offset to be relative to floor
   // Reset position is like 11 inches from the bottom of the frame to the center of the bottom hook.
 
   /** CLIMB MOTOR CONFIGURATION CONSTANTS */
-  public static final double kClosedRampRate = 2;
-  public static final double kOpenRampRate = 2;
-  public static final int kCurrentLimit = 30;
+  public static final double kClosedRampRate = .5;
+  public static final double kOpenRampRate = 0.5;
+  public static final int kCurrentLimit = 60;
   public static final boolean kMotorInverted = true;
   public static final IdleMode kIdleMode = IdleMode.kBrake;
 
@@ -131,7 +131,7 @@ public final class Constants {
   // public static final boolean kEncInverted = false;
   public static final double kEncVelConversion = 1; // Inch/Sec = RPM * ???
   // 9 rots of motor : 1 rot of screw. 1 rot  of screw : 1/8 inch height
-  public static final double kEncPosConversion = 1/1072; // 72 Motor rot per inch
+  public static final double kEncPosConversion = 1; // 72 Motor rot per inch
 
   /** CLIMB PID CONTROLLER CONSTANTS */
   public static final double kP = 0.06; // Proportional Constant
@@ -148,24 +148,24 @@ public final class Constants {
 
   public static class Handler {
     /** INTAKE SUBSYSTEM PARAMETERS */
-    public static final int kTiltPotAIport = 0;
+    public static final int kTiltPotAIport = 1;
   
-    public static final double kTiltMaxRange = 100; // What is the angle at 5 volts of the pot
-    public static final double kTiltZeroAngle = 0; // What is the angle at 0 volts of the pot
-    public static final double kTiltMaxAngle = 120;
-    public static final double kTiltMinAngle = 20;
+    public static final double kTiltMaxRange = 180; // What is the angle at 5 volts of the pot
+    public static final double kTiltZeroAngle = -3; // What is the angle at 0 volts of the pot
+    public static final double kTiltMaxAngle = 100;
+    public static final double kTiltMinAngle = 0;
   
-    public static final double kUpSpeed = 0.4;
-    public static final double kDownSpeed = 0.3;
-    public static final double kManualSpeedLimit = 0.75;
+    public static final double kUpSpeed = 0.2;
+    public static final double kDownSpeed = 0.2;
+    public static final double kManualSpeedLimit = 0.7;
     
     // public static final double kSpeedIn = 0.3; // Percent Output
     // public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)
   
     /** TITLER MOTOR CONFIGURATION CONSTANTS */
-    public static final double kClosedRampRate = 0.75;
-    public static final double kOpenRampRate = 0.75;
-    public static final int kCurrentLimit = 30;
+    public static final double kClosedRampRate = 0.1;
+    public static final double kOpenRampRate = 0.5;
+    public static final int kCurrentLimit = 40;
     public static final boolean kMotorInverted = false;
     public static final IdleMode kIdleMode = IdleMode.kBrake;
   
@@ -174,9 +174,9 @@ public final class Constants {
     public static final double kI = 0; // Integral Constant
     public static final double kD = 0; // Derivative Constant (LEAVE AT ZERO)
     public static final double kIz = 0; // Integral deadzone (Zero disables the deadzone)
-    public static final double kFF = 0.001; // Feed Forward Gain
-    public static final double kMaxOutput = 0.6; // Percent Output to Raise the Mechanism
-    public static final double kMinOutput = -0.3; // Negative Percent Output to Lower Mechanism
+    public static final double kFF = 0; // Feed Forward Gain
+    public static final double kMaxOutput = 0.4; // Percent Output to Raise the Mechanism
+    public static final double kMinOutput = -0.2; // Negative Percent Output to Lower Mechanism
     public static final double kMaxRPM = 3000; // Max RPM in Closed Loop Mode
   
     public static final double kStatic = 0.1; // Static Feedforward gain
@@ -197,13 +197,13 @@ public final class Constants {
     // LAUNCHER MOTOR CONFIGURATION CONSTANTS
     public static final double kSpeedPushLowRPM = 2500;
     public static final double kSpeedPushHighRPM = 4000;
-    public static final double kSpeedPull = 0.5;
+    public static final double kSpeedPull = 0.3;
     public static final double kSpeedPullFast = 0.8;
     
     public static final double kClosedRampRate = .2;
     public static final double kOpenRampRate = .2;
-    public static final boolean kLeftMotorInverted = false;
-    public static final boolean kRightMotorInverted = true;
+    public static final boolean kLeftMotorInverted = true;
+    public static final boolean kRightMotorInverted = false;
     public static final IdleMode kIdleMode = IdleMode.kCoast;
     public static final int kCurrentLimit = 30;
   
@@ -239,13 +239,13 @@ public final class Constants {
     public static final int kIntakeProxDIport = 0;
     
     /** INTAKE SUBSYSTEM PARAMETERS */
-    public static final double kSpeedIn = 0.4; // Percent Output
-    public static final double kSpeedOut = 0.6; // Percent Output
+    public static final double kSpeedIn = 0.075; // Percent Output
+    public static final double kSpeedOut = 0.5; // Percent Output
 
     /** INTAKE MOTOR CONFIGURATION CONSTANTS */
     public static final double kClosedRampRate = 0.1;
     public static final double kOpenRampRate = 0.1;
-    public static final int kCurrentLimit = 20;
+    public static final int kCurrentLimit = 35;
     public static final boolean kMotorInverted = false;
     public static final IdleMode kIdleMode = IdleMode.kBrake;
   }

@@ -84,8 +84,8 @@ public class Launcher extends SubsystemBase {
     m_EncoderLeft = m_LauncherMotorLeft.getEncoder();
     m_EncoderRight = m_LauncherMotorRight.getEncoder();
 
-    m_EncoderLeft.setInverted(Constants.Launcher.kEncLeftInverted);
-    m_EncoderRight.setInverted(Constants.Launcher.kEncRightInverted);
+    // m_EncoderLeft.setInverted(Constants.Launcher.kEncLeftInverted);
+    // m_EncoderRight.setInverted(Constants.Launcher.kEncRightInverted);
 
     m_EncoderLeft.setVelocityConversionFactor(Constants.Launcher.kEncVelConversion);
     m_EncoderRight.setVelocityConversionFactor(Constants.Launcher.kEncVelConversion);

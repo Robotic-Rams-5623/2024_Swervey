@@ -8,7 +8,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkRelativeEncoder.Type;
+//import com.revrobotics.SparkRelativeEncoder.Type;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,7 +18,7 @@ import frc.robot.Constants;
 public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   private final CANSparkMax m_IntakeMotor = new CANSparkMax(Constants.MotorIDs.kIntakeMotorCANid, MotorType.kBrushless);
-  private final RelativeEncoder m_IntakeEncoder;
+  //private final RelativeEncoder m_IntakeEncoder;
   private final DigitalInput m_NoteProx = new DigitalInput(Constants.Intake.kIntakeProxDIport);
 
   public Intake() {
@@ -55,7 +55,7 @@ public class Intake extends SubsystemBase {
 
     configureCANStatusFrames(m_IntakeMotor, 100, 20, 20, 0, 0, 0, 0);
 
-    m_IntakeEncoder = m_IntakeMotor.getEncoder(Type.kHallSensor, 42);
+    //m_IntakeEncoder = m_IntakeMotor.getEncoder(Type.kHallSensor, 42);
 
     /* Save Intake Motor Settings to the Flash Memory of the Controller */
     m_IntakeMotor.burnFlash();//
@@ -95,13 +95,13 @@ public class Intake extends SubsystemBase {
     return m_NoteProx.get();
   }
 
-  public double getVelocity() {
-    return m_IntakeEncoder.getVelocity();
-  }
+  // public double getVelocity() {
+  //   return m_IntakeEncoder.getVelocity();
+  // }
 
-  public boolean isMoving() {
-    return (getVelocity() > 20);
-  }
+  // public boolean isMoving() {
+  //   return (getVelocity() > 20);
+  // }
 
 
 
@@ -109,6 +109,6 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putBoolean("Note In Robot", getNoteProx());
-    SmartDashboard.putBoolean("Intake Moving", isMoving());
+    // SmartDashboard.putBoolean("Intake Moving", isMoving());
   }
 }

@@ -171,7 +171,7 @@ public class Climb extends SubsystemBase {
    * @return motor position
    */
   public final double getPosition() {
-    return m_ClimbEncoder.getPosition() * 16 / 1072;
+    return (m_ClimbEncoder.getPosition() * 16 / 1072) + Constants.Climb.kResetPosition;
   }
 
   /**
@@ -185,7 +185,9 @@ public class Climb extends SubsystemBase {
  }
 
 public final boolean getLowerProx() {
-  return !m_LowProx.get();
+  boolean state = !m_LowProx.get();
+  if (state) {m_ClimbEncoder.setPosition(Constants.Climb.kResetPosition);}
+  return state;
  }
 
 public final boolean getHigherProx() {
