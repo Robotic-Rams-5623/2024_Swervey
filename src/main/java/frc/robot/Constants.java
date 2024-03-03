@@ -150,14 +150,14 @@ public final class Constants {
     /** INTAKE SUBSYSTEM PARAMETERS */
     public static final int kTiltPotAIport = 1;
   
-    public static final double kTiltMaxRange = 180; // What is the angle at 5 volts of the pot
-    public static final double kTiltZeroAngle = -3; // What is the angle at 0 volts of the pot
+    public static final double kTiltMaxRange = 170; // What is the angle at 5 volts of the pot
+    public static final double kTiltZeroAngle = -13; // What is the angle at 0 volts of the pot
     public static final double kTiltMaxAngle = 100;
     public static final double kTiltMinAngle = 0;
   
     public static final double kUpSpeed = 0.2;
     public static final double kDownSpeed = 0.2;
-    public static final double kManualSpeedLimit = 0.7;
+    public static final double kManualSpeedLimit = .8;
     
     // public static final double kSpeedIn = 0.3; // Percent Output
     // public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)
@@ -196,7 +196,7 @@ public final class Constants {
   public static class Launcher{
     // LAUNCHER MOTOR CONFIGURATION CONSTANTS
     public static final double kSpeedPushLowRPM = 2500;
-    public static final double kSpeedPushHighRPM = 4000;
+    public static final double kSpeedPushHighRPM = 4500;
     public static final double kSpeedPull = 0.3;
     public static final double kSpeedPullFast = 0.8;
     
@@ -205,7 +205,7 @@ public final class Constants {
     public static final boolean kLeftMotorInverted = true;
     public static final boolean kRightMotorInverted = false;
     public static final IdleMode kIdleMode = IdleMode.kCoast;
-    public static final int kCurrentLimit = 30;
+    public static final int kCurrentLimit = 40;
   
     public static final boolean kEncLeftInverted = false;
     public static final boolean kEncRightInverted = true;
@@ -213,7 +213,7 @@ public final class Constants {
     public static final double kEncPosConversion = 1; // There is no position, it's a spinning wheel!
   
     /** LAUNCHER PID CONTROLLER CONSTANTS */
-    public static final double kP = 0.01; // Proportional Constant
+    public static final double kP = 0.5; // Proportional Constant
     public static final double kI = 0.0; // Integral Constant
     public static final double kD = 0.0; // Derivative Constant (LEAVE AT ZERO)
     public static final double kIz = 0.0; // Integral deadzone (Zero disables the deadzone)
@@ -239,7 +239,7 @@ public final class Constants {
     public static final int kIntakeProxDIport = 0;
     
     /** INTAKE SUBSYSTEM PARAMETERS */
-    public static final double kSpeedIn = 0.075; // Percent Output
+    public static final double kSpeedIn = 0.1; // Percent Output
     public static final double kSpeedOut = 0.5; // Percent Output
 
     /** INTAKE MOTOR CONFIGURATION CONSTANTS */

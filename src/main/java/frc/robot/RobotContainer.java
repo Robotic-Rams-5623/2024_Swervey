@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +31,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.io.File;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 
 public class RobotContainer {
   /* ROBOT SUBSYSTEM DEFINITIONS */
@@ -38,6 +41,7 @@ public class RobotContainer {
   private final Handler tilt = new Handler();
   private final Launcher launch = new Launcher();
   private final Intake intake = new Intake();
+  private final frc.robot.subsystems.Solenoid sol = new frc.robot.subsystems.Solenoid();
 
   /* SET DRIVER CONTROLLER OBJECTS */
   private final CommandXboxController driverXbox = new CommandXboxController(OperatorConstants.kDriverUSBPort);
@@ -54,12 +58,14 @@ public class RobotContainer {
   SendableChooser<Command> m_AutoChooser = new SendableChooser<>();
 
 
+
   
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     tilt.disable();
 
-    m_AutoChooser.setDefaultOption("None", Autos.none());
+    //m_AutoChooser.setDefaultOption("None", Autos.none());
+    m_AutoChooser = AutoBuilder.buildAutoChooser();
     //m_AutoChooser.addOption("Drive_Straight", Autos.driveLine(drivebase));
 
     SmartDashboard.putData(m_AutoChooser);
@@ -150,17 +156,24 @@ public class RobotContainer {
     
     /* X Button - Lock Wheels in X-Mode */
     driverXbox.x()
-          .debounce(0.1, Debouncer.DebounceType.kBoth)    // Prevents rapid repeated triggering
           .whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());  // Will keep wheels in locked position so long as the button is held.
                      
     /* CLIMB CONTROLS */
     /* Left Bumber - Climber Column Down */
     driverXbox.leftBumper()
-        //.debounce(0.5, Debouncer.DebounceType.kBoth)                           // Prevents rapid repeated triggering
         .whileTrue(
             Commands.startEnd(climb::Down, climb::Stop, climb)                                   // Run climber column down
                     .until(climbResetTrigger)                                  // Until while true ends or if the switch is hit.           
         );
+    
+    driverXbox.b()
+        .onTrue(
+          Commands.sequence(
+            Commands.runOnce(climb::Up, climb),
+          Commands.waitUntil(climbTopTrigger).withTimeout(35.0),
+          Commands.runOnce(climb::Stop, climb)
+        ));
+
     /* Left Bumber & A Button - Climber Column Down (No Limits) */
     // driverXbox.leftBumper().and(driverXbox.a())
     //     .debounce(0.5, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
@@ -170,30 +183,16 @@ public class RobotContainer {
     //     );
     /* Right Bumber - Climber Column Up */
     driverXbox.rightBumper()
-        //.debounce(0.5, Debouncer.DebounceType.kBoth)                // Prevents rapid repeated triggering
         .whileTrue(
           Commands.startEnd(climb::Up, climb::Stop, climb)                           // Run climber column up
                   .until(climbTopTrigger)                           // Until while true ends or if the switch is hit // Stop the climb motor
         );
-    // /* Right Bumber & A Button - Climber Column Up (No Limits) */
-    // driverXbox.rightBumper().and(driverXbox.a())
-    //     .debounce(0.5, Debouncer.DebounceType.kBoth)               // Prevents rapid repeated triggering
-    //     .whileTrue(
-    //       Commands.run(climb::Up, climb)                           // Run climber up
-    //               .andThen(Commands.runOnce(climb::Stop, climb)) // Stop climber after interrupted
-    //     );
-    
-    // driverXbox.rightBumper().whileTrue(new StartEndCommand(
-    //   climb::Up,
-    //   climb::Stop,
-    //   climb
-    // ));
+    /* Right Bumber & A Button - Climber Column Up (No Limits) */
+    driverXbox.rightBumper().and(driverXbox.a())
+        .whileTrue(
+          Commands.startEnd(climb::Up, climb::Stop, climb)                           // Run climber up
+        );
 
-    // driverXbox.rightBumper().whileTrue(new StartEndCommand(
-    //   climb::Down,
-    //   climb::Stop,
-    //   climb
-    // ));
   }
 
   private void configureActionBindings() {
@@ -204,7 +203,7 @@ public class RobotContainer {
         .whileTrue(
           Commands.parallel(
               Commands.startEnd(intake::In, intake::Stop, intake),                            // Run the intake inwards until let go or switch is triggered
-              Commands.startEnd(()->launch.load(0.4), launch::stop, launch)
+              Commands.startEnd(()->launch.load(0.45), launch::stop, launch)
             )                    // Stop the intake after the command ends.
         );
     // OR use this where the intake wheel moving will trigger the command to bring the note in
@@ -259,17 +258,17 @@ public class RobotContainer {
     
 
     /* POV Up - Tilter Move to Speaker Position */
-    m_actionXbox.povUp()
-        .onTrue(
-          Commands.sequence(
-              Commands.sequence(
-                    Commands.runOnce(() -> {tilt.enable();}, tilt),
-                    Commands.runOnce(() -> {tilt.setSetpoint(Constants.TiltAngles.kSpeakerAngle);}, tilt))
-                  .withTimeout(10.0),
-              Commands.runOnce(() -> {tilt.disable();}, tilt),
-                    Commands.runOnce(tilt::stop, tilt))
+    // m_actionXbox.povUp()
+    //     .onTrue(
+    //       Commands.sequence(
+    //           Commands.sequence(
+    //                 Commands.runOnce(() -> {tilt.enable();}, tilt),
+    //                 Commands.runOnce(() -> {tilt.setSetpoint(Constants.TiltAngles.kSpeakerAngle);}, tilt))
+    //               .withTimeout(10.0),
+    //           Commands.runOnce(() -> {tilt.disable();}, tilt),
+    //                 Commands.runOnce(tilt::stop, tilt))
                     
-        );
+    //     );
     
     // // /* POV Right - Tilter Move to Amp Position */
     // m_actionXbox.povRight()
@@ -303,18 +302,35 @@ public class RobotContainer {
         // .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
         .whileTrue(
           Commands.startEnd(
-            tilt::feedExtend,
-            tilt::feedRetract,
-            tilt));
+            sol::feedExtend,
+            sol::feedRetract,
+            sol));
     
     /* X Button - Manual Launcher Spin Up */
-    m_actionXbox.x()  // When X is pressed ans Start is not
-        .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
+    m_actionXbox.x()  // When X is pressed
         .whileTrue(
           Commands.startEnd(
-            () -> launch.launch(0.85),
+            () -> launch.launch(0.8),
             launch::stop,
             launch
+          )
+        );
+
+    m_actionXbox.y()
+        .onTrue(
+          Commands.sequence(
+            Commands.startEnd(
+              () -> launch.load(0.2), 
+              () -> launch.launch(1.0), //launch.setLaunchRPM(3500), 
+              launch
+            ).withTimeout(0.5),
+            Commands.waitSeconds(1.0),
+            Commands.startEnd(
+              sol::feedExtend, 
+              sol::feedRetract, 
+              sol
+            ).withTimeout(1.5),
+            Commands.runOnce(launch::stop, launch).beforeStarting(Commands.waitSeconds(1.0))
           )
         );
     

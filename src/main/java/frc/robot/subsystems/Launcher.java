@@ -10,6 +10,8 @@ import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -25,6 +27,7 @@ public class Launcher extends SubsystemBase {
   // private PIDController m_LauncherPIDController;
   private SparkPIDController m_LauncherPIDController;
   private double kP, kI, kD, kIz, kFF;
+
 
   /* The servo is really just a electro actuator. Need to find a way to give it 12V
    * Most likely from the switchable port on the PDH using a 5 to 10 amp fuse. */
@@ -104,25 +107,25 @@ public class Launcher extends SubsystemBase {
 
     /* Assign the local PID constants from the Constants file */
     kP = Constants.Launcher.kP; 
-    kI = Constants.Launcher.kI;
-    kD = Constants.Launcher.kD; 
-    kIz = Constants.Launcher.kIz;
-    kFF = Constants.Launcher.kFF;
+    kI = 0.0;//Constants.Launcher.kI;
+    kD = 0.0;//Constants.Launcher.kD; 
+    kIz = 0.0;//Constants.Launcher.kIz;
+    kFF = 0.0;//Constants.Launcher.kFF;
 
     /* Set PID controller gains using local constants */
     m_LauncherPIDController.setP(kP);
-    m_LauncherPIDController.setI(kI);
-    m_LauncherPIDController.setD(kD);
-    m_LauncherPIDController.setIZone(kIz);
-    m_LauncherPIDController.setFF(kFF);
+    // m_LauncherPIDController.setI(kI);
+    // m_LauncherPIDController.setD(kD);
+    // m_LauncherPIDController.setIZone(kIz);
+    // m_LauncherPIDController.setFF(kFF);
     m_LauncherPIDController.setOutputRange(Constants.Launcher.kMinOutput, Constants.Launcher.kMaxOutput);
 
     /* Put the inital PID Gains on the Dashboard so they can be tweaked */
     SmartDashboard.putNumber("Launcher kP", kP);
-    SmartDashboard.putNumber("Launcher kI", kI);
-    SmartDashboard.putNumber("Launcher kD", kD);
-    SmartDashboard.putNumber("Launcher kI Zone", kIz);
-    SmartDashboard.putNumber("Launcher kFeed Forward", kFF);
+    // SmartDashboard.putNumber("Launcher kI", kI);
+    // SmartDashboard.putNumber("Launcher kD", kD);
+    // SmartDashboard.putNumber("Launcher kI Zone", kIz);
+    // SmartDashboard.putNumber("Launcher kFeed Forward", kFF);
 
     configureCANStatusFrames(m_LauncherMotorLeft, 100, 20, 20, 0, 0, 0, 0);
     configureCANStatusFrames(m_LauncherMotorRight, 20, 20, 20, 0, 0, 0, 0);
@@ -130,6 +133,8 @@ public class Launcher extends SubsystemBase {
     /* Save all the configurations to the motors */
     m_LauncherMotorLeft.burnFlash();
     m_LauncherMotorRight.burnFlash();
+
+    
   }
 
   public void configureCANStatusFrames(
@@ -143,6 +148,8 @@ public class Launcher extends SubsystemBase {
     motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, CANStatus5);
     motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, CANStatus6);
   }
+
+
 
   
   /**
@@ -190,7 +197,6 @@ public class Launcher extends SubsystemBase {
    */
   public final void setLaunchRPM(double speed) {
     m_LauncherPIDController.setReference(speed, CANSparkMax.ControlType.kVelocity); // Right motor follows left's lead
-    // m_LauncherMotorRight.setReference(speed, CANSparkMax.ControlType.kVelocity);
   }
 
 
@@ -229,17 +235,9 @@ public class Launcher extends SubsystemBase {
   public final void updatePID() {
     /* Pull PID gains from the dashboard */
     double p = SmartDashboard.getNumber("Launcher kP", kP);
-    double i = SmartDashboard.getNumber("Launcher kI", kI);
-    double d = SmartDashboard.getNumber("Launcher kD", kD);
-    double iz = SmartDashboard.getNumber("Launcher kI Zone", kIz);
-    double ff = SmartDashboard.getNumber("Launcher kFeed Forward", kFF);
 
     /* If the gains changed, update the controller */
     if((kP != p)) { m_LauncherPIDController.setP(p); kP = p; }
-    if((kI != i)) { m_LauncherPIDController.setI(i); kI = i; }
-    if((kD != d)) { m_LauncherPIDController.setI(i); kD = d; }
-    if((kIz != iz)) { m_LauncherPIDController.setI(i); kIz = iz; }
-    if((kFF != ff)) { m_LauncherPIDController.setI(i); kFF = ff; }
 
     /* Reset the I gain accumulation amount */
     m_LauncherPIDController.setIAccum(0);
@@ -262,7 +260,7 @@ public class Launcher extends SubsystemBase {
     /* SMART DASHBOARD */
     SmartDashboard.putNumber("Launcher Motor Temp (F)", (m_LauncherMotorLeft.getMotorTemperature() * 9 / 5) + 32); // Default is C, Convert to F
     SmartDashboard.putNumber("Launcher Motor Current", m_LauncherMotorLeft.getOutputCurrent());
-    SmartDashboard.putNumber("Launcher Motor Input Voltage", m_LauncherMotorLeft.getBusVoltage());
+    // SmartDashboard.putNumber("Launcher Motor Input Voltage", m_LauncherMotorLeft.getBusVoltage());
     SmartDashboard.putNumber("Launcher Motor Duty Cycle", m_LauncherMotorLeft.getAppliedOutput());
     // SmartDashboard.putNumber("Launcher Position", getPosition()); Dont need this, position of a fly wheel is irrelevant
     SmartDashboard.putNumber("Launcher Velocity", getVelocity());

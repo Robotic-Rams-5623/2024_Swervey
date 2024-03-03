@@ -44,7 +44,7 @@ public class Handler extends PIDSubsystem {
    * 
    * IMPORTANT: REV ROBOTICS POWER ISTRIBUTION HUB (PDH) NEEDS TO HAVE CAN ID OF 1
    */
-  private final PowerDistribution m_PDH = new PowerDistribution(1, ModuleType.kRev);
+  // private final PowerDistribution m_PDH = new PowerDistribution(1, ModuleType.kRev);
 
   /* Create the sensors used for note sensing */
   //private final DigitalInput m_NoteProx = new DigitalInput(Constants.Handler.kHandlerProxDIport);
@@ -83,7 +83,7 @@ public class Handler extends PIDSubsystem {
     configureCANStatusFrames(m_TiltMotor, 100, 20, 20, 0, 0, 0, 0);
     
     m_TiltMotor.burnFlash();
-    feedRetract();
+    // feedRetract();
   }
 
   public void configureCANStatusFrames(
@@ -123,18 +123,18 @@ public class Handler extends PIDSubsystem {
    * Energizing the feed solenoid by enabling the switchable port on the PDH will
    * push the note into the feed wheels and fire the note into the desired target.
    */
-  public void feedExtend() {
-    m_PDH.setSwitchableChannel(true);
-  }
+  // public void feedExtend() {
+  //   m_PDH.setSwitchableChannel(true);
+  // }
 
-  /**
-   * DE_ENERGIZE THE FEED SOLENOID
-   * De-energizing the feed solenoid by disabling the switchable port on the PDH
-   * will retract the note pusher back to its loading state.
-   */
-  public void feedRetract() {
-    m_PDH.setSwitchableChannel(false);
-  }
+  // /**
+  //  * DE_ENERGIZE THE FEED SOLENOID
+  //  * De-energizing the feed solenoid by disabling the switchable port on the PDH
+  //  * will retract the note pusher back to its loading state.
+  //  */
+  // public void feedRetract() {
+  //   m_PDH.setSwitchableChannel(false);
+  // }
 
 
 
@@ -199,8 +199,12 @@ public class Handler extends PIDSubsystem {
    */
   public Command manualTilt(DoubleSupplier speed) {
     return run(() -> {
-      double input = MathUtil.applyDeadband(speed.getAsDouble(), OperatorConstants.kDriverDb_LeftY);
+      double input = MathUtil.applyDeadband(speed.getAsDouble() * Constants.Handler.kManualSpeedLimit, OperatorConstants.kDriverDb_LeftY);
+      double angle = (getPotAngle()*90/65)+90;
+      input += (.42 * Math.cos(Math.toRadians(angle)));
       m_TiltMotor.set(-Math.pow(input, 3) * Constants.Handler.kManualSpeedLimit);
+      SmartDashboard.putNumber("Tilt Applied Input", input);
+      SmartDashboard.putNumber("Tilt Applied Angle", angle);
     });
   }
 
@@ -219,5 +223,7 @@ public class Handler extends PIDSubsystem {
     SmartDashboard.putNumber("Pot Angle (Deg)", getPotAngle());
     SmartDashboard.putBoolean("Tilt Up Limit", atHighRange());
     SmartDashboard.putBoolean("Tilt Down Limit", atLowRange());
+    SmartDashboard.putNumber("Tilt Current", m_TiltMotor.getOutputCurrent());
+    SmartDashboard.putNumber("Tilt Applied Voltage", m_TiltMotor.getAppliedOutput());
   }
 }
