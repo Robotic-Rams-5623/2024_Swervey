@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
@@ -16,8 +15,6 @@ public class Climb extends SubsystemBase {
   /** Creates a new Climb. */
   private final CANSparkMax m_ClimbMotor = new CANSparkMax(Constants.MotorIDs.kClimbMotorCANid, MotorType.kBrushless);
   private RelativeEncoder m_ClimbEncoder;
-  private SparkPIDController m_ClimbPIDController;
-  private double kP, kI, kD, kIz, kFF;
   private final DigitalInput m_LowProx = new DigitalInput(Constants.Climb.kProxLowerDIO);
   private final DigitalInput m_HighProx = new DigitalInput(Constants.Climb.kProxUpperDIO);
 
@@ -57,39 +54,8 @@ public class Climb extends SubsystemBase {
      * CLIMB ENCODER CONFIGURATION
      */
     m_ClimbEncoder = m_ClimbMotor.getEncoder();
-
     m_ClimbEncoder.setPositionConversionFactor(Constants.Climb.kEncPosConversion); // Inches
     m_ClimbEncoder.setPosition(Constants.Climb.kResetPosition);
-
-    /* 
-     * CLIMB PID CONTROLLER
-     * Setting PID coefficients as constants within the subsystem will allow
-     * for the constants to be adjusted from the driver dashboard more easily.
-     * The constants in the subsystem are the current values of the PID controller
-     * compared to the driver station values. They are not set unless the flash is burned.
-     */
-    kP = Constants.Climb.kP; 
-    kI = Constants.Climb.kI;
-    kD = Constants.Climb.kD; 
-    kIz = Constants.Climb.kIz;
-    kFF = Constants.Climb.kFF;
-
-    m_ClimbPIDController = m_ClimbMotor.getPIDController();
-    m_ClimbPIDController.setP(kP);
-    m_ClimbPIDController.setI(kI);
-    m_ClimbPIDController.setD(kD);
-    m_ClimbPIDController.setIZone(kIz);
-    m_ClimbPIDController.setIAccum(0);
-    m_ClimbPIDController.setFF(kFF);
-    m_ClimbPIDController.setOutputRange(Constants.Climb.kMinOutput,Constants.Climb.kMaxOutput);
-    m_ClimbPIDController.setFeedbackDevice(m_ClimbEncoder);
-    m_ClimbPIDController.setFeedbackDevice(m_ClimbEncoder);
-
-    SmartDashboard.putNumber("Climb kP", kP);
-    SmartDashboard.putNumber("Climb kI", kI);
-    SmartDashboard.putNumber("Climb kD", kD);
-    SmartDashboard.putNumber("Climb kI Zone", kIz);
-    SmartDashboard.putNumber("Climb kFeed Forward", kFF);
 
     configureCANStatusFrames(m_ClimbMotor, 100, 20, 20, 20, 0, 0, 0);
 
@@ -135,30 +101,6 @@ public class Climb extends SubsystemBase {
   public final void Stop() {
     m_ClimbMotor.set(0.0);
   }
-
-  /**
-   * MOVE CLIMBER HOOK TO POSITION
-   * 
-   * Move the climber hook to a given position.
-   * 
-   * @param position (inches relative to robot or ground?)
-   */
-  public final void setPosition(double position) {
-    m_ClimbPIDController.setReference(position * 16 / 1072, ControlType.kPosition);
-  }
-
-  /** 
-   * GET CLIMBER APARATUS VELOCITY
-   * 
-   * This can be eith RPM of the motor or inches per second of the
-   * climber hook depending on what the encoder conversion facotr
-   * is set to.
-   * 
-   * @return motor speed
-   */
-  public final double getVelocity() {
-    return m_ClimbEncoder.getVelocity();
-  }
   
   /**
    * GET CLIMBER APARATUS POSITION
@@ -180,58 +122,47 @@ public class Climb extends SubsystemBase {
    * Resets the relative position of the climber encoder to eith zero
    * or an offset from the ground to get position relative to the floor.
    */
- public final void resetPosition() {
-  m_ClimbEncoder.setPosition(Constants.Climb.kResetPosition);
- }
-
-public final boolean getLowerProx() {
-  boolean state = !m_LowProx.get();
-  if (state) {m_ClimbEncoder.setPosition(Constants.Climb.kResetPosition);}
-  return state;
- }
-
-public final boolean getHigherProx() {
-  return !m_HighProx.get();
- }
- /** 
-  * UPDATE THE PID CONTROLLER PARAMETERS
-  * Using the values pulled from the driver dashboard, update the PID
-  * parameters and reburn the controller flash. This will be great for
-  * easy tuning of the controller.
-  */
-  public final void updatePID() {
-    double p = SmartDashboard.getNumber("Climb kP", kP);
-    double i = SmartDashboard.getNumber("Climb kI", kI);
-    double d = SmartDashboard.getNumber("Climb kD", kD);
-    double iz = SmartDashboard.getNumber("Climb kI Zone", kIz);
-    double ff = SmartDashboard.getNumber("Climb kFeed Forward", kFF);
-
-    if((kP != p)) { m_ClimbPIDController.setP(p); kP = p; }
-    if((kI != i)) { m_ClimbPIDController.setI(i); kI = i; }
-    if((kD != d)) { m_ClimbPIDController.setI(i); kD = d; }
-    if((kIz != iz)) { m_ClimbPIDController.setI(i); kIz = iz; }
-    if((kFF != ff)) { m_ClimbPIDController.setI(i); kFF = ff; }
-
-    m_ClimbPIDController.setIAccum(0);
-
-    //Need to do this to update
-    m_ClimbMotor.burnFlash();
-  }
-
-
+   public final void resetPosition() {
+    m_ClimbEncoder.setPosition(Constants.Climb.kResetPosition);
+   }
+  
+  /** 
+   * GET STATE OF LOWER PROX SWITCH
+   * Returns true when the prox switch is triggered by the climbing mechanism
+   * which signifies that the climber is at it's minimum climbing height. If
+   * the switch is triggered true, it will also zero the position of the encoder.
+   * 
+   * @return state of lower climb prox switch
+   */
+  public final boolean getLowerProx() {
+    boolean state = !m_LowProx.get();
+    if (state) {resetPosition();}
+    return state;
+   }
+  
+  /** 
+   * GET STATE OF UPPER PROX SWITCH
+   * Returns true when the prox switch is triggered by the climbing mechanism
+   * which signifies that the climber is at it's max climbing height
+   * 
+   * @return state of upper climb prox switch
+   */
+  public final boolean getHigherProx() {
+    return !m_HighProx.get();
+   }
+  
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-
-    /* SMART DASHBOARD */
-    SmartDashboard.putNumber("Climb Motor Temp (F)", (m_ClimbMotor.getMotorTemperature() * 9 / 5) + 32); // Default is C, Convert to F
-    SmartDashboard.putNumber("Climb Motor Current", m_ClimbMotor.getOutputCurrent());
-    SmartDashboard.putNumber("Climb Motor Input Voltage", m_ClimbMotor.getBusVoltage());
-    SmartDashboard.putNumber("Climb Motor Duty Cycle", m_ClimbMotor.getAppliedOutput());
-    SmartDashboard.putNumber("Climb Position", getPosition());
-    SmartDashboard.putNumber("Climb Velocity", getVelocity());
-
+    /* MAIN SMART DASHBOARD */
     SmartDashboard.putBoolean("Climb Low Switch", getLowerProx());
     SmartDashboard.putBoolean("Climb High Switch", getHigherProx());
+    SmartDashboard.putNumber("Climb Position", getPosition());
+    
+    /* TROUBLESHOOT SMART DASHBOARD */
+    // SmartDashboard.putNumber("Climb Motor Temp (F)", (m_ClimbMotor.getMotorTemperature() * 9 / 5) + 32); // Default is C, Convert to F
+    // SmartDashboard.putNumber("Climb Motor Current", m_ClimbMotor.getOutputCurrent());
+    // SmartDashboard.putNumber("Climb Motor Input Voltage", m_ClimbMotor.getBusVoltage());
+    // SmartDashboard.putNumber("Climb Motor Duty Cycle", m_ClimbMotor.getAppliedOutput());
+    // SmartDashboard.putNumber("Climb Velocity", getVelocity());
   }
 }
