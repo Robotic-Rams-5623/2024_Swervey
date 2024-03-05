@@ -4,11 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.cscore.VideoSink;
-import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -29,9 +24,6 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
   private Timer disabledTimer;
 
-  // public UsbCamera cam1;
-  // public VideoSink server;
-
   public Robot() { instance = this; }
   public static Robot getInstance() { return instance; }
 
@@ -47,17 +39,6 @@ public class Robot extends TimedRobot {
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot stop
     // immediately when disabled, but then also let it be pushed more 
     disabledTimer = new Timer();
-
-    // cam1 = CameraServer.startAutomaticCapture(1);
-    // cam1.setResolution(640, 480);
-    // cam1.setBrightness(50);
-    // cam1.setWhiteBalanceAuto();
-    // cam1.setExposureAuto();
-    // cam1.setFPS(24);
-    // cam1.setPixelFormat(PixelFormat.kMJPEG);
-
-    // server = CameraServer.getServer();
-    // server.setSource(cam1);
   }
 
   /**
