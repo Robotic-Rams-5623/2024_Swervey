@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -13,7 +9,6 @@ import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-// import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -37,21 +32,8 @@ public class Handler extends PIDSubsystem {
   private final AnalogInput m_PotAI;
   private final AnalogPotentiometer m_TiltAngle;
 
-  /* Solenoid Object
-   * Since the solenoid we are using to feed the note into the launch wheels is a 12V
-   * solneoid and we don't want to over complicate the circuitry with a relay controlled
-   * by the RoboRIO DIO ports, lets run the solenoid off of the switchable port on the PDH!
-   * 
-   * IMPORTANT: REV ROBOTICS POWER ISTRIBUTION HUB (PDH) NEEDS TO HAVE CAN ID OF 1
-   */
-  // private final PowerDistribution m_PDH = new PowerDistribution(1, ModuleType.kRev);
-
-  /* Create the sensors used for note sensing */
-  //private final DigitalInput m_NoteProx = new DigitalInput(Constants.Handler.kHandlerProxDIport);
-
   /* Simple motor feed forward controll to help counteract gravity */
   // private final SimpleMotorFeedforward m_tiltFeedForward = new SimpleMotorFeedforward(Constants.Handler.kStatic, Constants.Handler.kVel);
-
 
   public Handler() {
     super(
@@ -83,7 +65,6 @@ public class Handler extends PIDSubsystem {
     configureCANStatusFrames(m_TiltMotor, 100, 20, 20, 0, 0, 0, 0);
     
     m_TiltMotor.burnFlash();
-    // feedRetract();
   }
 
   public void configureCANStatusFrames(
@@ -113,33 +94,10 @@ public class Handler extends PIDSubsystem {
   }
 
 
-
   /**
    * REMAINING FUNCTIONS THAT ARENT DIRECTLY ASSOCIATED WITH THE PID
    */
 
-  /**
-   *  ENERGIZE THE FEED SOLENOID
-   * Energizing the feed solenoid by enabling the switchable port on the PDH will
-   * push the note into the feed wheels and fire the note into the desired target.
-   */
-  // public void feedExtend() {
-  //   m_PDH.setSwitchableChannel(true);
-  // }
-
-  // /**
-  //  * DE_ENERGIZE THE FEED SOLENOID
-  //  * De-energizing the feed solenoid by disabling the switchable port on the PDH
-  //  * will retract the note pusher back to its loading state.
-  //  */
-  // public void feedRetract() {
-  //   m_PDH.setSwitchableChannel(false);
-  // }
-
-
-
-
-  
   /**
    * GET THE ANALOG INPUT POTENTIOMETER VOLTAGE
    * @return voltage of potentiometer in volts
@@ -163,9 +121,6 @@ public class Handler extends PIDSubsystem {
   public boolean atLowRange() {
     return (getPotAngle() <= (Constants.Handler.kTiltMinAngle + 5.0));
   }
-
-
-  
 
   
   /**
@@ -210,7 +165,6 @@ public class Handler extends PIDSubsystem {
 
   /**
    * STOP ALL MOTOR OUTPUT
-   * 
    */
   public void stop() {
     m_TiltMotor.set(0.0);
@@ -218,12 +172,11 @@ public class Handler extends PIDSubsystem {
 
   @Override
   public void periodic() {
-    // Slap some smartdashboard stuff in here
     SmartDashboard.putNumber("Pot Raw Voltage", getPotVoltage());
     SmartDashboard.putNumber("Pot Angle (Deg)", getPotAngle());
     SmartDashboard.putBoolean("Tilt Up Limit", atHighRange());
     SmartDashboard.putBoolean("Tilt Down Limit", atLowRange());
-    SmartDashboard.putNumber("Tilt Current", m_TiltMotor.getOutputCurrent());
-    SmartDashboard.putNumber("Tilt Applied Voltage", m_TiltMotor.getAppliedOutput());
+    // SmartDashboard.putNumber("Tilt Current", m_TiltMotor.getOutputCurrent());
+    // SmartDashboard.putNumber("Tilt Applied Voltage", m_TiltMotor.getAppliedOutput());
   }
 }
