@@ -24,15 +24,8 @@ public class Launcher extends SubsystemBase {
   private RelativeEncoder m_EncoderLeft;
   private RelativeEncoder m_EncoderRight;
 
-  // private PIDController m_LauncherPIDController;
   private SparkPIDController m_LauncherPIDController;
   private double kP, kI, kD, kIz, kFF;
-
-
-  /* The servo is really just a electro actuator. Need to find a way to give it 12V
-   * Most likely from the switchable port on the PDH using a 5 to 10 amp fuse. */
-  // private final Servo m_LauncherServo = new Servo(Constants.Launcher.kLauncherServoid);
-  // private PowerDistribution m_powerHub = new PowerDistribution(0, ModuleType.kRev); // PROBABLY PUT THIS IN THE hANDLER SUBSYSTEM
 
   public Launcher() {
     /*
@@ -107,25 +100,14 @@ public class Launcher extends SubsystemBase {
 
     /* Assign the local PID constants from the Constants file */
     kP = Constants.Launcher.kP; 
-    kI = 0.0;//Constants.Launcher.kI;
-    kD = 0.0;//Constants.Launcher.kD; 
-    kIz = 0.0;//Constants.Launcher.kIz;
-    kFF = 0.0;//Constants.Launcher.kFF;
 
     /* Set PID controller gains using local constants */
     m_LauncherPIDController.setP(kP);
-    // m_LauncherPIDController.setI(kI);
-    // m_LauncherPIDController.setD(kD);
-    // m_LauncherPIDController.setIZone(kIz);
-    // m_LauncherPIDController.setFF(kFF);
+
     m_LauncherPIDController.setOutputRange(Constants.Launcher.kMinOutput, Constants.Launcher.kMaxOutput);
 
     /* Put the inital PID Gains on the Dashboard so they can be tweaked */
     SmartDashboard.putNumber("Launcher kP", kP);
-    // SmartDashboard.putNumber("Launcher kI", kI);
-    // SmartDashboard.putNumber("Launcher kD", kD);
-    // SmartDashboard.putNumber("Launcher kI Zone", kIz);
-    // SmartDashboard.putNumber("Launcher kFeed Forward", kFF);
 
     configureCANStatusFrames(m_LauncherMotorLeft, 100, 20, 20, 0, 0, 0, 0);
     configureCANStatusFrames(m_LauncherMotorRight, 20, 20, 20, 0, 0, 0, 0);
@@ -149,20 +131,13 @@ public class Launcher extends SubsystemBase {
     motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, CANStatus6);
   }
 
-
-
-  
   /**
    * Stop motors from moving
    */
   public final void stop() {
-    // Stop motors from running
     m_LauncherMotorLeft.set(0.0); // Right motor follows left's lead
-    // m_LauncherMotorRight.stopMotor();
   }
 
-
-  
   /**
    * Load the note into the handler.
    * This is to pick the notes up from the floor or if we are good
@@ -177,11 +152,8 @@ public class Launcher extends SubsystemBase {
    */
   public final void load(double speed) {
     m_LauncherMotorLeft.set(-speed); // Right motor follows left's lead
-    // m_LauncherMotorRight.set(-speed);
   }
 
-
-  
   /*
    * Launch the note. Launching is considered the wheels spinning in
    * such a way that the note is ejected from the robot. Left wheel
@@ -198,8 +170,6 @@ public class Launcher extends SubsystemBase {
   public final void setLaunchRPM(double speed) {
     m_LauncherPIDController.setReference(speed, CANSparkMax.ControlType.kVelocity); // Right motor follows left's lead
   }
-
-
   
   /*
    * Launch the note. Launching is considered the wheels spinning in
@@ -210,10 +180,7 @@ public class Launcher extends SubsystemBase {
    */
   public final void launch(double speed) {
     m_LauncherMotorLeft.set(speed); // Right motor follows left's lead
-    // m_LauncherMotorRight.set(speed);
   }
-
-
   
   /**
    * Get the speed of the left launcher motor.
@@ -224,8 +191,6 @@ public class Launcher extends SubsystemBase {
     return m_EncoderLeft.getVelocity();
   }
 
-
-  
   /**
    * UPDATE PID CONTROLLER PARAMETERS
    * Using the values pulled from the smartdashboard, update the PID
@@ -239,30 +204,25 @@ public class Launcher extends SubsystemBase {
     /* If the gains changed, update the controller */
     if((kP != p)) { m_LauncherPIDController.setP(p); kP = p; }
 
-    /* Reset the I gain accumulation amount */
-    m_LauncherPIDController.setIAccum(0);
-
     /* Need to reburn the flash of the controller in order for the changes to take affect */
     m_LauncherMotorLeft.burnFlash();
     m_LauncherMotorRight.burnFlash();
   }
 
-
-  
   /**
    * Great place put the smartdashboard output data. Includes live PID controller tuning
    * to make life a little easier.
    */
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-
     /* SMART DASHBOARD */
     SmartDashboard.putNumber("Launcher Motor Temp (F)", (m_LauncherMotorLeft.getMotorTemperature() * 9 / 5) + 32); // Default is C, Convert to F
     SmartDashboard.putNumber("Launcher Motor Current", m_LauncherMotorLeft.getOutputCurrent());
-    // SmartDashboard.putNumber("Launcher Motor Input Voltage", m_LauncherMotorLeft.getBusVoltage());
-    SmartDashboard.putNumber("Launcher Motor Duty Cycle", m_LauncherMotorLeft.getAppliedOutput());
-    // SmartDashboard.putNumber("Launcher Position", getPosition()); Dont need this, position of a fly wheel is irrelevant
     SmartDashboard.putNumber("Launcher Velocity", getVelocity());
+
+    /* TROUBLESHOOTING SMARTDASHBOARD */
+    // SmartDashboard.putNumber("Launcher Motor Input Voltage", m_LauncherMotorLeft.getBusVoltage());
+    // SmartDashboard.putNumber("Launcher Motor Duty Cycle", m_LauncherMotorLeft.getAppliedOutput());
+    // SmartDashboard.putNumber("Launcher Position", getPosition()); Dont need this, position of a fly wheel is irrelevant
   }
 }
