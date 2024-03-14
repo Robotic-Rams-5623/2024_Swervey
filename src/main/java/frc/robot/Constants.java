@@ -2,10 +2,7 @@ package frc.robot;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.pathplanner.lib.util.PIDConstants;
-
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import swervelib.math.Matter;
 
@@ -25,7 +22,8 @@ public final class Constants {
     public static final double kDriverDb_LeftX = 0.1;
     public static final double kDriverDb_LeftY = 0.1;
     public static final double kDriverDb_RightX = 0.1;
-    public static final double TURN_CONSTANT = 7.5;
+    public static final double TURN_CONSTANT = 7.5
+    ;
     
     public static final int kActionUSBPort = 1;
     public static final double kActionDeadband = 0.1;
@@ -87,7 +85,7 @@ public final class Constants {
     public static final double kTurnMotorReduction = 12.8; // SDS MK4 Module Turn Gear Ratio
   
     // Max speed of the robot in feet per seconds
-    public static final double kMaxDriveFeetPerSec = 9.0; // [Feet/Sec]
+    public static final double kMaxDriveFeetPerSec = 9.5; // [Feet/Sec]
   }
 
 
@@ -150,12 +148,12 @@ public final class Constants {
     /** INTAKE SUBSYSTEM PARAMETERS */
     public static final int kTiltPotAIport = 1;
   
-    public static final double kTiltMaxRange = 170; // What is the angle at 5 volts of the pot
+    public static final double kTiltMaxRange = 175; // What is the angle at 5 volts of the pot
     public static final double kTiltZeroAngle = -13; // What is the angle at 0 volts of the pot
-    public static final double kTiltMaxAngle = 100;
+    public static final double kTiltMaxAngle = 180;
     public static final double kTiltMinAngle = 0;
   
-    public static final double kUpSpeed = 0.2;
+    public static final double kUpSpeed = 0.15;
     public static final double kDownSpeed = 0.2;
     public static final double kManualSpeedLimit = .8;
     
@@ -197,7 +195,9 @@ public final class Constants {
     // LAUNCHER MOTOR CONFIGURATION CONSTANTS
     public static final double kSpeedPushLowRPM = 2500;
     public static final double kSpeedPushHighRPM = 4500;
-    public static final double kSpeedPull = 0.3;
+    public static final double kSpeedPushPercent = 0.75; //````````````````
+
+    public static final double kSpeedPull = 0.1; //````````````````
     public static final double kSpeedPullFast = 0.8;
     
     public static final double kClosedRampRate = .2;

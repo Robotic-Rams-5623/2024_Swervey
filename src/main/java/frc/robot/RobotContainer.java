@@ -10,23 +10,14 @@ import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Handler;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Launcher;
+import frc.robot.subsystems.Solenoid;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.io.File;
@@ -41,7 +32,7 @@ public class RobotContainer {
   private final Handler tilt = new Handler();
   private final Launcher launch = new Launcher();
   private final Intake intake = new Intake();
-  private final frc.robot.subsystems.Solenoid sol = new frc.robot.subsystems.Solenoid();
+  private final Solenoid sol = new Solenoid();
 
   /* SET DRIVER CONTROLLER OBJECTS */
   private final CommandXboxController driverXbox = new CommandXboxController(OperatorConstants.kDriverUSBPort);
@@ -65,7 +56,7 @@ public class RobotContainer {
     tilt.disable();
 
     m_AutoChooser = AutoBuilder.buildAutoChooser();
-    //m_AutoChooser.addOption("Drive_Straight", Autos.driveLine(drivebase));
+    // m_AutoChooser.addOption("Drive_Straight", Autos.straight());
 
     SmartDashboard.putData(m_AutoChooser);
     
@@ -148,7 +139,6 @@ public class RobotContainer {
   private void configureDriveBindings() {
     /* Y Button - Reset Gyro Angle Manually */
     driverXbox.y()
-        .debounce(0.1, Debouncer.DebounceType.kBoth)                    // Prevents rapid repeated triggering
         .onTrue(Commands.runOnce(drivebase::zeroGyro, drivebase));                 // When button changes from false to true, trigger command once.
     
     /* X Button - Lock Wheels in X-Mode */
@@ -189,7 +179,6 @@ public class RobotContainer {
     /** INTAKE BUTTONS */
     /* B Button - Intake Spinning Inwards */
     m_actionXbox.b()               // When B is pressed but Start is not pressed
-        .debounce(0.2, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
         .whileTrue(
           Commands.parallel(
               Commands.startEnd(intake::In, intake::Stop, intake),                            // Run the intake inwards until let go or switch is triggered
@@ -202,7 +191,6 @@ public class RobotContainer {
     // Bad idea since it will stop the tilter PID from finishing
 
     m_actionXbox.leftBumper()
-        .debounce(0.2, Debouncer.DebounceType.kBoth)
         .whileTrue(
           Commands.startEnd(
           tilt::manualDown, tilt::stop, tilt)
@@ -210,7 +198,6 @@ public class RobotContainer {
         );
     
     m_actionXbox.rightBumper()
-        .debounce(0.2, Debouncer.DebounceType.kBoth)
         .whileTrue(
           Commands.startEnd(
           tilt::manualUp, tilt::stop, tilt)
@@ -219,7 +206,6 @@ public class RobotContainer {
     /** LAUNCHER BINDINGS */
     /* Select Button - Manual Feed Solenoid */
     m_actionXbox.a()  // When Select is pressed
-        // .debounce(0.4, Debouncer.DebounceType.kBoth)                  // Prevents rapid repeated triggering
         .whileTrue(
           Commands.startEnd(
             sol::feedExtend,
@@ -230,7 +216,7 @@ public class RobotContainer {
     m_actionXbox.x()  // When X is pressed
         .whileTrue(
           Commands.startEnd(
-            () -> launch.launch(0.8),
+            () -> launch.launch(frc.robot.Constants.Launcher.kSpeedPushPercent),
             launch::stop,
             launch
           )
@@ -240,8 +226,8 @@ public class RobotContainer {
         .onTrue(
           Commands.sequence(
             Commands.startEnd(
-              () -> launch.load(0.2), 
-              () -> launch.launch(1.0), //launch.setLaunchRPM(3500), 
+              () -> launch.load(frc.robot.Constants.Launcher.kSpeedPull), 
+              () -> launch.launch(frc.robot.Constants.Launcher.kSpeedPushPercent), //launch.setLaunchRPM(3500), 
               launch
             ).withTimeout(0.5),
             Commands.waitSeconds(1.0),

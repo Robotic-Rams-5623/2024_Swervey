@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -11,6 +15,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.io.File;
 import java.io.IOException;
+
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+
 import swervelib.parser.SwerveParser;
 
 /**
@@ -23,6 +33,7 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
   private Timer disabledTimer;
+  Thread m_visionThread;
 
   public Robot() { instance = this; }
   public static Robot getInstance() { return instance; }
@@ -39,6 +50,27 @@ public class Robot extends TimedRobot {
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot stop
     // immediately when disabled, but then also let it be pushed more 
     disabledTimer = new Timer();
+
+    // CAMERA CODE
+    m_visionThread = new Thread(
+      () -> {
+        UsbCamera camera = CameraServer.startAutomaticCapture();
+        camera.setResolution(320, 240);
+        camera.setFPS(30);
+        CvSink cvSink = CameraServer.getVideo();
+        CvSource outputStream = CameraServer.putVideo("Rectangle", 320, 240);
+        Mat mat = new Mat();
+        while (!Thread.interrupted()) {
+          if (cvSink.grabFrame(mat) == 0) {
+            outputStream.notifyError(cvSink.getError());
+            continue;
+          }
+          Imgproc.rectangle(mat, new Point(100, 100), new Point(200, 150), new Scalar(255, 255, 255), 2);
+          outputStream.putFrame(mat);
+        }
+      });
+      m_visionThread.setDaemon(true);
+      m_visionThread.start();
   }
 
   /**
