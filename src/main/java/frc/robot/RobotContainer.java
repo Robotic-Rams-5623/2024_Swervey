@@ -137,6 +137,7 @@ public class RobotContainer {
    * presses, events that occur, or even limit switches on the robot.
    */
   private void configureDriveBindings() {
+    /* DRIVE CONTROLS */
     /* Y Button - Reset Gyro Angle Manually */
     driverXbox.y()
         .onTrue(Commands.runOnce(drivebase::zeroGyro, drivebase));                 // When button changes from false to true, trigger command once.
@@ -152,13 +153,28 @@ public class RobotContainer {
             Commands.startEnd(climb::Down, climb::Stop, climb)                                   // Run climber column down
                     .until(climbResetTrigger)                                  // Until while true ends or if the switch is hit.           
         );
-    
+
+    /* A Button - Climber Up to the Speaker Shootinh Height */
+    driveXbox.a()
+        .onTrue(
+          Commands.sequence(
+            Commands.runOnce(climb::Up),
+            Commands.waitUntil(
+                () -> {
+                  climb.getPosition > Constants.Climb.kSpeakerPosition;
+                }
+                ).withTimeout(10.0),
+            Commands.runOnce(climb::Stop, climb)
+          )
+        );
+
+    /* B Button - Climber Up to Max Position Controlled by Limit Switch */
     driverXbox.b()
         .onTrue(
           Commands.sequence(
             Commands.runOnce(climb::Up, climb),
-          Commands.waitUntil(climbTopTrigger).withTimeout(35.0),
-          Commands.runOnce(climb::Stop, climb)
+            Commands.waitUntil(climbTopTrigger).withTimeout(20.0),
+            Commands.runOnce(climb::Stop, climb)
         ));
 
     /* Right Bumber - Climber Column Up */
@@ -167,36 +183,47 @@ public class RobotContainer {
           Commands.startEnd(climb::Up, climb::Stop, climb)                           // Run climber column up
                   .until(climbTopTrigger)                           // Until while true ends or if the switch is hit // Stop the climb motor
         );
+    
     /* Right Bumber & A Button - Climber Column Up (No Limits) */
-    driverXbox.rightBumper().and(driverXbox.a())
-        .whileTrue(
-          Commands.startEnd(climb::Up, climb::Stop, climb)                           // Run climber up
-        );
-
+    // driverXbox.rightBumper().and(driverXbox.a())
+    //     .whileTrue(
+    //       Commands.startEnd(climb::Up, climb::Stop, climb)                           // Run climber up
+    //     );
   }
 
+
+
+  
   private void configureActionBindings() {
     /** INTAKE BUTTONS */
     /* B Button - Intake Spinning Inwards */
     m_actionXbox.b()               // When B is pressed but Start is not pressed
         .whileTrue(
           Commands.parallel(
-              Commands.startEnd(intake::In, intake::Stop, intake),                            // Run the intake inwards until let go or switch is triggered
+              Commands.startEnd(intake::In, intake::Stop, intake),                            // Run the intake inwards until let go
               Commands.startEnd(()->launch.load(0.45), launch::stop, launch)
             )                    // Stop the intake after the command ends.
         );
 
-    /** HANDLE BINDINGS */
-    /* POV Center - Tilter Stops Moving */
-    // Bad idea since it will stop the tilter PID from finishing
+    /* B Button + Start Button - Intake Spinning Outwards */
+    // m_actionXbox.b().and(m_actionXbox.start())               // When B is pressed and Start is pressed
+    //     .whileTrue(
+    //       Commands.parallel(
+    //           Commands.startEnd(intake::Out, intake::Stop, intake),                            // Run the intake outwards until let go
+    //           Commands.startEnd(()->launch.unload(0.2), launch::stop, launch)
+    //         )                    // Stop the intake after the command ends.
+    //     );
 
+    /** HANDLE BINDINGS */
+    /* Left Bumper - Manual Tilt Down Button (in Case Override is Needed) */
     m_actionXbox.leftBumper()
         .whileTrue(
           Commands.startEnd(
           tilt::manualDown, tilt::stop, tilt)
           .unless(climbResetTrigger)
         );
-    
+
+    /* Right Bumper - Manual Tilt Up Button (in Case Ovveride is Needed) */
     m_actionXbox.rightBumper()
         .whileTrue(
           Commands.startEnd(
@@ -204,7 +231,7 @@ public class RobotContainer {
         );
     
     /** LAUNCHER BINDINGS */
-    /* Select Button - Manual Feed Solenoid */
+    /* A Button - Manual Feed Solenoid */
     m_actionXbox.a()  // When Select is pressed
         .whileTrue(
           Commands.startEnd(
@@ -222,6 +249,7 @@ public class RobotContainer {
           )
         );
 
+    /* Y Button - Launch Note Sequence */
     m_actionXbox.y()
         .onTrue(
           Commands.sequence(
@@ -229,16 +257,26 @@ public class RobotContainer {
               () -> launch.load(frc.robot.Constants.Launcher.kSpeedPull), 
               () -> launch.launch(frc.robot.Constants.Launcher.kSpeedPushPercent), //launch.setLaunchRPM(3500), 
               launch
-            ).withTimeout(0.5),
-            Commands.waitSeconds(1.0),
+            ).withTimeout(0.4),
+            Commands.waitSeconds(0.8),
             Commands.startEnd(
               sol::feedExtend, 
               sol::feedRetract, 
               sol
-            ).withTimeout(1.5),
-            Commands.runOnce(launch::stop, launch).beforeStarting(Commands.waitSeconds(1.0))
+            ).withTimeout(1.0),
+            Commands.runOnce(launch::stop, launch).beforeStarting(Commands.waitSeconds(0.6))
           )
         );
+
+    /* POV Buttons - Setpoints for Amp, Speaker, and Pickup */
+    m_actionXbox.POVup()
+        .onTrue(
+          Commands.runOnce(
+            () -> {
+              tilt.setGoal();
+              tilt.enable();
+            },
+            tilt));
   }
 
 
@@ -256,6 +294,11 @@ public class RobotContainer {
     
   }
 
+  /**
+   * DRIVE MOTOR BRAKE
+   * Set the brake mode on the drive motors.
+   * @param brake is enabled (true) or coast is enabled (false)
+   */
   public void setMotorBrake(boolean brake) {
     drivebase.setMotorBrake(brake);
   }
