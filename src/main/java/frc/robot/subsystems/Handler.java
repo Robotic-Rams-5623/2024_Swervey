@@ -8,18 +8,18 @@ import java.util.function.DoubleSupplier;
 import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfilledPIDController;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.PIDSubsystem;
+import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.Constants;
 import frc.robot.Constants.OperatorConstants;
 
-public class Handler extends PIDSubsystem {
+public class Handler extends ProfiledPIDSubsystem {
   /* Create the motor for tilting the handling mechanism */
   private final CANSparkMax m_TiltMotor = new CANSparkMax(Constants.MotorIDs.kTiltMotorCANid, MotorType.kBrushless);
 
@@ -33,14 +33,24 @@ public class Handler extends PIDSubsystem {
   private final AnalogPotentiometer m_TiltAngle;
 
   /* Simple motor feed forward controll to help counteract gravity */
-  // private final SimpleMotorFeedforward m_tiltFeedForward = new SimpleMotorFeedforward(Constants.Handler.kStatic, Constants.Handler.kVel);
+  private final SimpleMotorFeedforward m_tiltFeedForward = new SimpleMotorFeedforward(Constants.Handler.kStatic, Constants.Handler.kVel);
 
   public Handler() {
     super(
-        // The PIDController used by the subsystem
-        new PIDController(Constants.Handler.kP, Constants.Handler.kI, Constants.Handler.kD));
-    getController().setTolerance(5.0); // In Degrees
+      // The PIDController used by the subsystem
+      new ProfiledPIDController(
+          Constants.Handler.kP, 
+          Constants.Handler.kI, 
+          Constants.Handler.kD, 
+          new TrapezoidProfile.Constraints(
+              Constants.Handler.kMaxVelRadPerSec,  // Max Velocity Radians Per Second (~45 degrees per second)
+              Constants.Handler.kMaxAccRadPerSec   // Max Acceleration Rad Per Sec Squared
+          )),
+      0);
 
+    // Start handler at rest in starting position
+    setGoal(Constants.Handler.kStartAngleOffset);
+    
     /* Configure the potentiometer for angle measurement of the tilt mechanism */
     m_PotAI = new AnalogInput(Constants.Handler.kTiltPotAIport);
     m_PotAI.setAverageBits(2);
@@ -61,9 +71,7 @@ public class Handler extends PIDSubsystem {
     m_TiltMotor.setIdleMode(Constants.Handler.kIdleMode); // Brake or Coast
     m_TiltMotor.setInverted(Constants.Handler.kMotorInverted);
     m_TiltMotor.setSmartCurrentLimit(Constants.Handler.kCurrentLimit); // 30 Amp Limit (40 Amp Breaker)
-
     configureCANStatusFrames(m_TiltMotor, 100, 20, 20, 0, 0, 0, 0);
-    
     m_TiltMotor.burnFlash();
   }
 
@@ -84,8 +92,10 @@ public class Handler extends PIDSubsystem {
    */
   @Override
   public void useOutput(double output, double setpoint) {
-    m_TiltMotor.set(output);
-    // May need to add a feedforward to counteract gravity
+    m_TiltMotor.set(
+          output +
+          m_tiltFeedForward.calculate(setpoin.position, setpoint.velocity)
+    );
   }
 
   @Override
@@ -176,6 +186,8 @@ public class Handler extends PIDSubsystem {
     SmartDashboard.putNumber("Pot Angle (Deg)", getPotAngle());
     SmartDashboard.putBoolean("Tilt Up Limit", atHighRange());
     SmartDashboard.putBoolean("Tilt Down Limit", atLowRange());
+    SmartDashboard.putBoolean("Tilt PID Enabled?", isEnabled());
+    SmartDashboard.putBoolean("Tilt PID At Setpoint?", atSetpoint());
     // SmartDashboard.putNumber("Tilt Current", m_TiltMotor.getOutputCurrent());
     // SmartDashboard.putNumber("Tilt Applied Voltage", m_TiltMotor.getAppliedOutput());
   }
