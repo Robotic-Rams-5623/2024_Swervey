@@ -148,9 +148,9 @@ public final class Constants {
     /** INTAKE SUBSYSTEM PARAMETERS */
     public static final int kTiltPotAIport = 1;
   
-    public static final double kTiltMaxRange = 175; // What is the angle at 5 volts of the pot
-    public static final double kTiltZeroAngle = -13; // What is the angle at 0 volts of the pot
-    public static final double kTiltMaxAngle = 180;
+    public static final double kTiltMaxRange = 180; // What is the angle at 5 volts of the pot
+    public static final double kTiltZeroAngle = 0; // What is the angle at 0 volts of the pot
+    public static final double kTiltMaxAngle = 175;
     public static final double kTiltMinAngle = 0;
   
     public static final double kUpSpeed = 0.15;
@@ -173,12 +173,15 @@ public final class Constants {
     public static final double kD = 0; // Derivative Constant (LEAVE AT ZERO)
     public static final double kIz = 0; // Integral deadzone (Zero disables the deadzone)
     public static final double kFF = 0; // Feed Forward Gain
-    public static final double kMaxOutput = 0.4; // Percent Output to Raise the Mechanism
-    public static final double kMinOutput = -0.2; // Negative Percent Output to Lower Mechanism
+    public static final double kMaxOutput = 0.6; // Percent Output to Raise the Mechanism
+    public static final double kMinOutput = -0.3; // Negative Percent Output to Lower Mechanism
     public static final double kMaxRPM = 3000; // Max RPM in Closed Loop Mode
   
-    public static final double kStatic = 0.1; // Static Feedforward gain
-    public static final double kVel = 0.01; // Velocity feedforward gain
+    public static final double kStatic = 0.2; // Static Feedforward gain
+    public static final double kVel = 0.02; // Velocity feedforward gain
+    public static final double kMaxVelRadPerSec = Math.PI() / 4; // Max velocity of movement profile in radians per second (~45 deg per sec)
+    public static final double kMaxAccRadPerSec = kMaxVelRadPerSec / 60; // Max acceleration of movement profile in radians per second squared
+    public static final double kStartAngleOffset = 0.0;
 
     public static enum handleState {
       None,
