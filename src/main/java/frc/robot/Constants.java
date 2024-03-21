@@ -113,6 +113,7 @@ public final class Constants {
   public static final double kSpeedUp = 0.9; // Percent Output
   public static final double kSpeedDown = 0.9; // Percent Output
   public static final double kChainHeight = 24.5;
+  public static final double kSpeakerHeight = 10;
 
   // Bottom Hook to About Ground
   public static final double kResetPosition = 15.5; // Zero for relative to robot or offset to be relative to floor
@@ -152,6 +153,8 @@ public final class Constants {
     public static final double kTiltZeroAngle = 0; // What is the angle at 0 volts of the pot
     public static final double kTiltMaxAngle = 175;
     public static final double kTiltMinAngle = 0;
+    
+    public static final double kAmpPosition = 90;
   
     public static final double kUpSpeed = 0.15;
     public static final double kDownSpeed = 0.2;
@@ -179,7 +182,7 @@ public final class Constants {
   
     public static final double kStatic = 0.2; // Static Feedforward gain
     public static final double kVel = 0.02; // Velocity feedforward gain
-    public static final double kMaxVelRadPerSec = Math.PI() / 4; // Max velocity of movement profile in radians per second (~45 deg per sec)
+    public static final double kMaxVelRadPerSec = Math.PI / 4; // Max velocity of movement profile in radians per second (~45 deg per sec)
     public static final double kMaxAccRadPerSec = kMaxVelRadPerSec / 60; // Max acceleration of movement profile in radians per second squared
     public static final double kStartAngleOffset = 0.0;
 

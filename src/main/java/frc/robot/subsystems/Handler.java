@@ -8,7 +8,9 @@ import java.util.function.DoubleSupplier;
 import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ProfilledPIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -91,10 +93,10 @@ public class Handler extends ProfiledPIDSubsystem {
    * NEXT FEW FUNCTIONS ARE FOR THE PID SUBSYSTEM
    */
   @Override
-  public void useOutput(double output, double setpoint) {
+  public void useOutput(double output, TrapezoidProfile.State setpoint) {
     m_TiltMotor.set(
           output +
-          m_tiltFeedForward.calculate(setpoin.position, setpoint.velocity)
+          m_tiltFeedForward.calculate(setpoint.position, setpoint.velocity)
     );
   }
 
@@ -125,11 +127,15 @@ public class Handler extends ProfiledPIDSubsystem {
   }
 
   public boolean atHighRange() {
-    return (getPotAngle() >= (Constants.Handler.kTiltMaxAngle - 10.0));
+    return (getPotAngle() >= (Constants.Handler.kTiltMaxAngle - 8.0));
   }
 
   public boolean atLowRange() {
     return (getPotAngle() <= (Constants.Handler.kTiltMinAngle + 5.0));
+  }
+
+  public boolean atAmpAngle() {
+    return (getPotAngle() < Constants.Handler.kAmpPosition + 5) && (getPotAngle() > Constants.Handler.kAmpPosition - 5);
   }
 
   
@@ -187,7 +193,7 @@ public class Handler extends ProfiledPIDSubsystem {
     SmartDashboard.putBoolean("Tilt Up Limit", atHighRange());
     SmartDashboard.putBoolean("Tilt Down Limit", atLowRange());
     SmartDashboard.putBoolean("Tilt PID Enabled?", isEnabled());
-    SmartDashboard.putBoolean("Tilt PID At Setpoint?", atSetpoint());
+    // SmartDashboard.putBoolean("Tilt PID At Setpoint?", atSetpoint());
     // SmartDashboard.putNumber("Tilt Current", m_TiltMotor.getOutputCurrent());
     // SmartDashboard.putNumber("Tilt Applied Voltage", m_TiltMotor.getAppliedOutput());
   }

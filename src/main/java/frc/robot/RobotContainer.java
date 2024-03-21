@@ -155,15 +155,11 @@ public class RobotContainer {
         );
 
     /* A Button - Climber Up to the Speaker Shootinh Height */
-    driveXbox.a()
+    driverXbox.a()
         .onTrue(
           Commands.sequence(
             Commands.runOnce(climb::Up),
-            Commands.waitUntil(
-                () -> {
-                  climb.getPosition > Constants.Climb.kSpeakerPosition;
-                }
-                ).withTimeout(10.0),
+            Commands.waitUntil(climb::atSpeakerHeight).withTimeout(10.0),
             Commands.runOnce(climb::Stop, climb)
           )
         );
@@ -269,11 +265,11 @@ public class RobotContainer {
         );
 
     /* POV Buttons - Setpoints for Amp, Speaker, and Pickup */
-    m_actionXbox.POVup()
+    m_actionXbox.povRight()
         .onTrue(
           Commands.runOnce(
             () -> {
-              tilt.setGoal();
+              tilt.setGoal(90);
               tilt.enable();
             },
             tilt));

@@ -150,6 +150,10 @@ public class Climb extends SubsystemBase {
   public final boolean getHigherProx() {
     return !m_HighProx.get();
    }
+
+  public boolean atSpeakerHeight() {
+    return (getPosition() < Constants.Climb.kSpeakerHeight + .5) && (getPosition() > Constants.Climb.kSpeakerHeight - .5);
+  }
   
   @Override
   public void periodic() {
