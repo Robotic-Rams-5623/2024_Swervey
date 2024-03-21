@@ -13,6 +13,9 @@ public class SwerveModule
   
   /* Swerve Module Motors */
   public final  SwerveMotor             angleMotor, driveMotor;
+  // public final CANSparkFlex             angleMotor, driveMotor;
+  // public final RelativeEncoder          encoder;
+  // public final SparkPIDController       pid;
   
   /* Swerve Module Absolute Encoder */
   public final  SwerveAbsoluteEncoder   absoluteEncoder;
@@ -47,6 +50,25 @@ public class SwerveModule
                      SwerveModuleConfig moduleConfiguration,
                      SimpleMotorFeedforward driveFeedforward)
   {
-    
+    this.moduleNumber = moduleNumber;
+    configuration = moduleConfiguration;
+    angleOffset = moduleConfiguration.angleOffset;
+
+    // Initialize Feedforward for drive motor
+    feedforward = driveFeedforward;
+
+    // Create motors from configuration and reset them to defaults.
+    angleMotor = moduleConfiguration.angleMotor;
+    driveMotor = moduleConfiguration.driveMotor;
+    angleMotor.factoryDefaults();
+    driveMotor.factoryDefaults();
+
+    // Configure voltage comp, current limit, and ramp rate.
+    angleMotor.setVoltageCompensation(configuration.physicalCharacteristics.optimalVoltage);
+    driveMotor.setVoltageCompensation(configuration.physicalCharacteristics.optimalVoltage);
+    angleMotor.setCurrentLimit(configuration.physicalCharacteristics.angleMotorCurrentLimit);
+    driveMotor.setCurrentLimit(configuration.physicalCharacteristics.driveMotorCurrentLimit);
+    angleMotor.setLoopRampRate(configuration.physicalCharacteristics.angleMotorRampRate);
+    driveMotor.setLoopRampRate(configuration.physicalCharacteristics.driveMotorRampRate);
   }
 }
