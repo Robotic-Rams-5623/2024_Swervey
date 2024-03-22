@@ -8,8 +8,10 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Handler;
 import frc.robot.subsystems.Launcher;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
@@ -43,5 +45,16 @@ public final class Autos {
   public static Command testAuto() {
     return new PathPlannerAuto("Test Auto");
     // return Commands.none();
+  }
+
+  public static Command shoot(Climb climb, Handler tilt) {
+    return Commands.sequence(
+      Commands.runOnce(climb::Up),
+      Commands.waitUntil(climb::atSpeakerHeight).withTimeout(10.0),
+      Commands.runOnce(climb::Stop, climb),
+      Commands.startEnd(tilt::manualUp, tilt::stop, tilt)
+          .withTimeout(5)
+    
+    );
   }
 }

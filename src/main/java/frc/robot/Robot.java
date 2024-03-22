@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
             outputStream.notifyError(cvSink.getError());
             continue;
           }
-          Imgproc.rectangle(mat, new Point(100, 100), new Point(200, 150), new Scalar(255, 255, 255), 2);
+          Imgproc.rectangle(mat, new Point(80, 100), new Point(220, 175), new Scalar(255, 0, 0), 2);
           outputStream.putFrame(mat);
         }
       });

@@ -152,7 +152,11 @@ public class Climb extends SubsystemBase {
    }
 
   public boolean atSpeakerHeight() {
-    return (getPosition() < Constants.Climb.kSpeakerHeight + .5) && (getPosition() > Constants.Climb.kSpeakerHeight - .5);
+    return (getPosition() < Constants.Climb.kSpeakerHeight + 1) && (getPosition() > Constants.Climb.kSpeakerHeight - .1);
+  }
+
+  public boolean atStageHeight() {
+    return (getPosition() < 26.9);
   }
   
   @Override

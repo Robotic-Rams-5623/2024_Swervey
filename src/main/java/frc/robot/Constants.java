@@ -94,8 +94,8 @@ public final class Constants {
    * CONSTATNS FOR USE WITH YAGSL
    */
   public static final class AutonConstants {
-    public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.7, 0, 0);
-    public static final PIDConstants ANGLE_PID   = new PIDConstants(0.5, 0, 0);
+    public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.55, 0, 0);
+    public static final PIDConstants ANGLE_PID   = new PIDConstants(0.4, 0, 0);
   }
   public static final class DrivebaseConstants {
     // Hold time on motor brakes when disabled
@@ -112,11 +112,11 @@ public final class Constants {
     /** CLIMB SUBSYSTEM PARAMETERS */
   public static final double kSpeedUp = 0.9; // Percent Output
   public static final double kSpeedDown = 0.9; // Percent Output
-  public static final double kChainHeight = 24.5;
-  public static final double kSpeakerHeight = 10;
+  public static final double kChainHeight = 38;
+  public static final double kSpeakerHeight = 24.25;
 
   // Bottom Hook to About Ground
-  public static final double kResetPosition = 15.5; // Zero for relative to robot or offset to be relative to floor
+  public static final double kResetPosition = 22.5; // Zero for relative to robot or offset to be relative to floor
   // Reset position is like 11 inches from the bottom of the frame to the center of the bottom hook.
 
   /** CLIMB MOTOR CONFIGURATION CONSTANTS */
@@ -149,29 +149,32 @@ public final class Constants {
     /** INTAKE SUBSYSTEM PARAMETERS */
     public static final int kTiltPotAIport = 1;
   
-    public static final double kTiltMaxRange = 180; // What is the angle at 5 volts of the pot
-    public static final double kTiltZeroAngle = 0; // What is the angle at 0 volts of the pot
-    public static final double kTiltMaxAngle = 175;
-    public static final double kTiltMinAngle = 0;
-    
-    public static final double kAmpPosition = 90;
+    // POT Settings
+    public static final double kTiltMaxRange = 170; // What is the angle at 5 volts of the pot
+    public static final double kTiltZeroAngle = -22.3; // What is the angle at 0 volts of the pot
+
+    // PID Controls
+    public static final double kTiltMaxAngle = 33;
+    public static final double kTiltMinAngle = -0.05;
+    public static final double kAmpPosition = 16.0;
   
-    public static final double kUpSpeed = 0.15;
-    public static final double kDownSpeed = 0.2;
-    public static final double kManualSpeedLimit = .8;
+    // Speed Limits
+    public static final double kUpSpeed = 0.21;
+    public static final double kDownSpeed = 0.3;
+    public static final double kManualSpeedLimit = .65;
     
     // public static final double kSpeedIn = 0.3; // Percent Output
     // public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)
   
     /** TITLER MOTOR CONFIGURATION CONSTANTS */
-    public static final double kClosedRampRate = 0.1;
-    public static final double kOpenRampRate = 0.5;
+    public static final double kClosedRampRate = 0.3;
+    public static final double kOpenRampRate = 0.8;
     public static final int kCurrentLimit = 40;
     public static final boolean kMotorInverted = false;
     public static final IdleMode kIdleMode = IdleMode.kBrake;
   
     /** TILTER PID CONTROLLER CONSTANTS */
-    public static final double kP = 0.01; // Proportional Constant
+    public static final double kP = 1.0; // Proportional Constant
     public static final double kI = 0; // Integral Constant
     public static final double kD = 0; // Derivative Constant (LEAVE AT ZERO)
     public static final double kIz = 0; // Integral deadzone (Zero disables the deadzone)
@@ -181,10 +184,11 @@ public final class Constants {
     public static final double kMaxRPM = 3000; // Max RPM in Closed Loop Mode
   
     public static final double kStatic = 0.2; // Static Feedforward gain
-    public static final double kVel = 0.02; // Velocity feedforward gain
+    public static final double kVel = 0.9; // Velocity feedforward gain
     public static final double kMaxVelRadPerSec = Math.PI / 4; // Max velocity of movement profile in radians per second (~45 deg per sec)
     public static final double kMaxAccRadPerSec = kMaxVelRadPerSec / 60; // Max acceleration of movement profile in radians per second squared
     public static final double kStartAngleOffset = 0.0;
+    public static final double kFFAngleConstant = 180/33; // offset by 90 and then 0 to 33 is 0 to 180
 
     public static enum handleState {
       None,

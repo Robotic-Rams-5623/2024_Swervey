@@ -94,10 +94,9 @@ public class Handler extends ProfiledPIDSubsystem {
    */
   @Override
   public void useOutput(double output, TrapezoidProfile.State setpoint) {
-    m_TiltMotor.set(
-          output +
-          m_tiltFeedForward.calculate(setpoint.position, setpoint.velocity)
-    );
+    double out = output + m_tiltFeedForward.calculate(setpoint.position, setpoint.velocity);
+    SmartDashboard.putNumber("Tilt PID Output", output);
+    m_TiltMotor.set(out);
   }
 
   @Override
@@ -171,8 +170,8 @@ public class Handler extends ProfiledPIDSubsystem {
   public Command manualTilt(DoubleSupplier speed) {
     return run(() -> {
       double input = MathUtil.applyDeadband(speed.getAsDouble() * Constants.Handler.kManualSpeedLimit, OperatorConstants.kDriverDb_LeftY);
-      double angle = (getPotAngle()*90/65)+90;
-      input += (.42 * Math.cos(Math.toRadians(angle)));
+      double angle = (getPotAngle()*Constants.Handler.kFFAngleConstant)+90;
+      input += (.4 * Math.cos(Math.toRadians(angle)));
       m_TiltMotor.set(-Math.pow(input, 3) * Constants.Handler.kManualSpeedLimit);
       SmartDashboard.putNumber("Tilt Applied Input", input);
       SmartDashboard.putNumber("Tilt Applied Angle", angle);

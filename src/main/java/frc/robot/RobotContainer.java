@@ -164,6 +164,15 @@ public class RobotContainer {
           )
         );
 
+    driverXbox.start()
+        .onTrue(
+          Commands.sequence(
+            Commands.runOnce(climb::Down),
+            Commands.waitUntil(climb::atStageHeight).withTimeout(6.0),
+            Commands.runOnce(climb::Stop, climb)
+          )
+        );
+
     /* B Button - Climber Up to Max Position Controlled by Limit Switch */
     driverXbox.b()
         .onTrue(
@@ -216,7 +225,7 @@ public class RobotContainer {
         .whileTrue(
           Commands.startEnd(
           tilt::manualDown, tilt::stop, tilt)
-          .unless(climbResetTrigger)
+          .beforeStarting(() -> tilt.disable(), tilt)
         );
 
     /* Right Bumper - Manual Tilt Up Button (in Case Ovveride is Needed) */
@@ -224,6 +233,7 @@ public class RobotContainer {
         .whileTrue(
           Commands.startEnd(
           tilt::manualUp, tilt::stop, tilt)
+          .beforeStarting(() -> tilt.disable(), tilt)
         );
     
     /** LAUNCHER BINDINGS */
@@ -269,7 +279,23 @@ public class RobotContainer {
         .onTrue(
           Commands.runOnce(
             () -> {
-              tilt.setGoal(90);
+              tilt.setGoal(Constants.Handler.kAmpPosition);
+              tilt.enable();
+            },
+            tilt));
+    m_actionXbox.povUp()
+        .onTrue(
+          Commands.runOnce(
+            () -> {
+              tilt.setGoal(Constants.Handler.kTiltMaxAngle);
+              tilt.enable();
+            },
+            tilt));
+    m_actionXbox.povDown()
+        .onTrue(
+          Commands.runOnce(
+            () -> {
+              tilt.setGoal(Constants.Handler.kTiltMinAngle);
               tilt.enable();
             },
             tilt));
