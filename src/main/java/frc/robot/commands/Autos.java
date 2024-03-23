@@ -14,6 +14,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Handler;
 import frc.robot.subsystems.Launcher;
+import frc.robot.subsystems.Solenoid;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 
 
@@ -47,14 +48,33 @@ public final class Autos {
     // return Commands.none();
   }
 
-  public static Command shoot(Climb climb, Handler tilt) {
+  public static Command shoot(Climb climb, Handler tilt, Launcher launch, Solenoid sol) {
     return Commands.sequence(
       Commands.runOnce(climb::Up),
       Commands.waitUntil(climb::atSpeakerHeight).withTimeout(10.0),
-      Commands.runOnce(climb::Stop, climb),
-      Commands.startEnd(tilt::manualUp, tilt::stop, tilt)
-          .withTimeout(5)
-    
+      Commands.parallel(
+        Commands.runOnce(climb::Stop, climb),
+        Commands.startEnd(tilt::manualUp, tilt::stop, tilt)
+          .withTimeout(2.5)
+      ),
+      shootPreset(launch, sol)
+    );
+  }
+
+  public static Command shootPreset(Launcher launch, Solenoid sol) {
+    return Commands.sequence(
+      Commands.startEnd(
+        () -> launch.load(frc.robot.Constants.Launcher.kSpeedPull), 
+        () -> launch.launch(frc.robot.Constants.Launcher.kSpeedPushPercent), //launch.setLaunchRPM(3500), 
+        launch
+      ).withTimeout(0.3),
+      Commands.waitSeconds(0.5),
+      Commands.startEnd(
+        sol::feedExtend, 
+        sol::feedRetract, 
+        sol
+      ).withTimeout(0.4),
+      Commands.runOnce(launch::stop, launch).beforeStarting(Commands.waitSeconds(0.4))
     );
   }
 }

@@ -21,6 +21,8 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import com.pathplanner.lib.commands.FollowPathCommand;
+
 import swervelib.parser.SwerveParser;
 
 /**
@@ -47,6 +49,8 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
+    // FollowPathCommand.warmupCommand().schedule();
+
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot stop
     // immediately when disabled, but then also let it be pushed more 
     disabledTimer = new Timer();
@@ -65,7 +69,7 @@ public class Robot extends TimedRobot {
             outputStream.notifyError(cvSink.getError());
             continue;
           }
-          Imgproc.rectangle(mat, new Point(80, 100), new Point(220, 175), new Scalar(255, 0, 0), 2);
+          Imgproc.rectangle(mat, new Point(90, 110), new Point(230, 175), new Scalar(255, 0, 0), 2);
           outputStream.putFrame(mat);
         }
       });

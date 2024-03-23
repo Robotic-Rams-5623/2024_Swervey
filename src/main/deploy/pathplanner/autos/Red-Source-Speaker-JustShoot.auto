@@ -1,0 +1,31 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.823746112542153,
+      "y": 4.333009521939157
+    },
+    "rotation": 60.42216131873831
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot-Preset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker Source Red"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

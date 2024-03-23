@@ -156,7 +156,7 @@ public class Climb extends SubsystemBase {
   }
 
   public boolean atStageHeight() {
-    return (getPosition() < 26.9);
+    return (getPosition() < 27.7);
   }
   
   @Override

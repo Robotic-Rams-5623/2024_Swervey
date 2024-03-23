@@ -85,7 +85,7 @@ public final class Constants {
     public static final double kTurnMotorReduction = 12.8; // SDS MK4 Module Turn Gear Ratio
   
     // Max speed of the robot in feet per seconds
-    public static final double kMaxDriveFeetPerSec = 9.5; // [Feet/Sec]
+    public static final double kMaxDriveFeetPerSec = 9.8; // [Feet/Sec]
   }
 
 
@@ -94,8 +94,8 @@ public final class Constants {
    * CONSTATNS FOR USE WITH YAGSL
    */
   public static final class AutonConstants {
-    public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.55, 0, 0);
-    public static final PIDConstants ANGLE_PID   = new PIDConstants(0.4, 0, 0);
+    public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.32, 0, 0);
+    public static final PIDConstants ANGLE_PID   = new PIDConstants(0.55, 0, 0);
   }
   public static final class DrivebaseConstants {
     // Hold time on motor brakes when disabled
@@ -113,7 +113,7 @@ public final class Constants {
   public static final double kSpeedUp = 0.9; // Percent Output
   public static final double kSpeedDown = 0.9; // Percent Output
   public static final double kChainHeight = 38;
-  public static final double kSpeakerHeight = 24.25;
+  public static final double kSpeakerHeight = 24.75;
 
   // Bottom Hook to About Ground
   public static final double kResetPosition = 22.5; // Zero for relative to robot or offset to be relative to floor
@@ -150,8 +150,8 @@ public final class Constants {
     public static final int kTiltPotAIport = 1;
   
     // POT Settings
-    public static final double kTiltMaxRange = 170; // What is the angle at 5 volts of the pot
-    public static final double kTiltZeroAngle = -22.3; // What is the angle at 0 volts of the pot
+    public static final double kTiltMaxRange = 190; // What is the angle at 5 volts of the pot
+    public static final double kTiltZeroAngle = -42.3; // What is the angle at 0 volts of the pot
 
     // PID Controls
     public static final double kTiltMaxAngle = 33;
@@ -159,9 +159,9 @@ public final class Constants {
     public static final double kAmpPosition = 16.0;
   
     // Speed Limits
-    public static final double kUpSpeed = 0.21;
-    public static final double kDownSpeed = 0.3;
-    public static final double kManualSpeedLimit = .65;
+    public static final double kUpSpeed = 0.23;
+    public static final double kDownSpeed = 0.5;
+    public static final double kManualSpeedLimit = .75;
     
     // public static final double kSpeedIn = 0.3; // Percent Output
     // public static final double kSpeedOut = 0.6; // Percent Output (Spit out faster then you take in)

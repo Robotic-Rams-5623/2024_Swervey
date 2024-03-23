@@ -13,8 +13,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
@@ -130,7 +128,7 @@ public class Handler extends ProfiledPIDSubsystem {
   }
 
   public boolean atLowRange() {
-    return (getPotAngle() <= (Constants.Handler.kTiltMinAngle + 5.0));
+    return (getPotAngle() <= (Constants.Handler.kTiltMinAngle + 2.0));
   }
 
   public boolean atAmpAngle() {

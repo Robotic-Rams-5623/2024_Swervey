@@ -1,0 +1,31 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.6924444618120023,
+      "y": 4.331587893945019
+    },
+    "rotation": 121.89079180184571
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot-Preset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker Source Blue"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

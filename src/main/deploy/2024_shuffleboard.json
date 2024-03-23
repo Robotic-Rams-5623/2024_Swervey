@@ -167,7 +167,7 @@
           "20,0": {
             "size": [
               11,
-              2
+              3
             ],
             "content": {
               "_type": "ComboBox Chooser",
@@ -180,7 +180,7 @@
           "0,0": {
             "size": [
               20,
-              15
+              13
             ],
             "content": {
               "_type": "Camera Stream",
@@ -206,7 +206,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///SmartDashboard/Tilt PID Enabled?",
-              "_title": "SmartDashboard/Tilt PID Enabled?",
+              "_title": "/SmartDashboard/Tilt PID Enabled?",
               "_glyph": 148,
               "_showGlyph": false,
               "Colors/Color when true": "#7CFC00FF",
@@ -234,7 +234,7 @@
             "content": {
               "_type": "Text View",
               "_source0": "network_table:///SmartDashboard/Tilt PID Output",
-              "_title": "SmartDashboard/Tilt PID Output",
+              "_title": "/SmartDashboard/Tilt PID Output",
               "_glyph": 148,
               "_showGlyph": false
             }

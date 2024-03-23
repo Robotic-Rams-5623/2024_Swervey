@@ -18,11 +18,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.io.File;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 
 public class RobotContainer {
@@ -55,8 +57,12 @@ public class RobotContainer {
   public RobotContainer() {
     tilt.disable();
 
+    NamedCommands.registerCommand("Shoot", Autos.shoot(climb, tilt, launch, sol));
+    NamedCommands.registerCommand("Shoot-Preset", Autos.shootPreset(launch, sol));
+    NamedCommands.registerCommand("Tilt Down", Commands.startEnd(tilt::manualDown, tilt::stop, tilt).withTimeout(4.0));
+    NamedCommands.registerCommand("Intake In", Commands.runOnce(intake::In, intake));
+    NamedCommands.registerCommand("Intake Off", Commands.runOnce(intake::Stop, intake));
     m_AutoChooser = AutoBuilder.buildAutoChooser();
-    // m_AutoChooser.addOption("Drive_Straight", Autos.straight());
 
     SmartDashboard.putData(m_AutoChooser);
     
@@ -152,6 +158,11 @@ public class RobotContainer {
         .whileTrue(
             Commands.startEnd(climb::Down, climb::Stop, climb)                                   // Run climber column down
                     .until(climbResetTrigger)                                  // Until while true ends or if the switch is hit.           
+        );
+
+    driverXbox.back().and(driverXbox.leftBumper())
+        .whileTrue(
+          Commands.startEnd(climb::Down, climb::Stop, climb)
         );
 
     /* A Button - Climber Up to the Speaker Shootinh Height */
